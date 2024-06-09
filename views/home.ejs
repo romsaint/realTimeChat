@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат в реальном времени</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io({
+        auth: {
+            token: localStorage.getItem('token')
+        }
+    });
+
+</script>
+
+<body class="bg-blue-100 flex flex-col items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded shadow-lg w-full max-w-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Чат</h1>
+            <div class="flex items-center">
+                <button class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Выйти</button>
+            </div>
+        </div>
+        <div class="mb-4">
+            <div class="h-64 overflow-y-auto p-4 border rounded">
+                <!-- Сообщения будут добавляться здесь -->
+                <div class="mb-4">
+                    <strong class="font-bold">Имя пользователя:</strong>
+                    <p class="text-gray-700">Текст сообщения...</p>
+                </div>
+                <!-- Добавьте больше сообщений по аналогии -->
+            </div>
+        </div>
+        <form class="flex items-center">
+            <input type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mr-4 leading-tight focus:outline-none focus:shadow-outline" placeholder="Введите сообщение">
+            <button type="submit" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Отправить</button>
+        </form>
+    </div>
+</body>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    socket.on('p', () => {
+        console.log('ASDASDADASDAS')
+    })
+</script>
+</html>
