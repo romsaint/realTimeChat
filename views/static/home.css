@@ -22,7 +22,6 @@ li{
     border-radius: 3px;
     font-size: 14px;
     display: flex;
-    flex-direction: column;
 }
 .wrap__user-message{
     display: flex;
@@ -34,7 +33,9 @@ li{
 .date-message{
     display: flex;
     justify-content: end;
-    font-size: 11px;
+    font-size: 9px;
+    align-items: end;
+    margin-left: 5px;
 }
 .user-message{
     font-size: 14px;
@@ -57,4 +58,16 @@ li{
     padding: 5px;
     border-radius: 15px;
     border: 1px solid rgb(80, 80, 80);
+}
+
+.inner-chat-container::-webkit-scrollbar {
+    background-color: #f5f5f5;
+}
+
+.inner-chat-container::-webkit-scrollbar-thumb {
+    background-color: #4b4b4b;
+}
+
+.inner-chat-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(91, 91, 91);
 }

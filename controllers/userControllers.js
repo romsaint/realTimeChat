@@ -53,7 +53,7 @@ router.get('/users', verifyToken, async (req, res) => {
 })
 router.get('/get-chat/:userId', verifyToken, async (req, res) => {
     const userId = req.params.userId
-    const recipient = await Users.find({_id: userId}, {username: 1})
+    const recipient = await Users.findOne({_id: userId}, {username: 1})
 
     const messages = await Messages.find({
         $or: [
@@ -67,20 +67,24 @@ router.get('/get-chat/:userId', verifyToken, async (req, res) => {
 router.post('/send-message/:userId', verifyToken, async (req, res) => {
     const { message } = req.body
     const userId = req.params.userId
-
-    if (message.trim()) {
-        await Messages.create({
-            recipient: userId,
-            sender: req.user,
-            text: message
-        })
-
-        return res.json({
-            userNow: req.user,
-            recipient: userId,
-            message
-        })
+    
+    try{
+        if (message.trim()) {
+            const createdMessage = await Messages.create({
+                recipient: userId,
+                sender: req.user,
+                text: message
+            })
+    
+            return res.json({
+                createdAt: createdMessage.date_created,
+                message
+            })
+        }
+    }catch(e){
+        console.log('EEEEEEEEE')
     }
+    
 
 })
 

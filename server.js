@@ -31,8 +31,8 @@ io.use((socket, next) => {
     })
 })
 io.on('connection', socket => {
-    socket.on('chat message', () => {
-        io.emit('chat message')
+    socket.on('chat message', (text, createdAt) => {
+        io.emit('chat message', text, createdAt)
     })
 })
 
