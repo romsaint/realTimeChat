@@ -1,0 +1,60 @@
+* {
+    font-family: "Lato", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}  
+li{
+    list-style: none;
+}
+.mini-shadow{
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.04);
+}
+
+.button-send-message{
+    transition: 0.11s ease-in-out;
+}
+
+.my-message{
+    padding: 10px;
+    display: flex;
+    max-width: 90%;
+    background-color: rgb(190, 227, 227);
+    border-radius: 3px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+}
+.wrap__user-message{
+    display: flex;
+}
+.wrap__my-message{
+    display: flex;
+    justify-content: end;
+}
+.date-message{
+    display: flex;
+    justify-content: end;
+    font-size: 11px;
+}
+.user-message{
+    font-size: 14px;
+    padding: 10px;
+    display: flex;
+    max-width: 90%;
+    justify-content: end;
+    background-color: rgb(225 222 220);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+}
+
+.active-user{
+    background-color: rgb(184, 214, 255);
+}
+
+.user-btn{
+    width: 100%;
+    padding: 5px;
+    border-radius: 15px;
+    border: 1px solid rgb(80, 80, 80);
+}

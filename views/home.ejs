@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат в реальном времени</title>
+    <title>Real time chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="./static/home.css">
 </head>
 
 
@@ -18,36 +25,57 @@
 
 </script>
 
-<body class="bg-blue-100 flex flex-col items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded shadow-lg w-full max-w-2xl">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Чат</h1>
-            <div class="flex items-center">
-                <button class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Выйти</button>
+<body class="bg-blue-50 flex flex-col items-center justify-center min-h-screen">
+    <div class="main bg-white p-8 rounded w-full flex">
+        <div class="mini-shadow w-1/4 bg-gray-100 p-4 rounded mr-4">
+            <div class="mt-4">
+                <input type="text" name="query" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500" placeholder="Search user with ID">
             </div>
+
+            <ul class="users space-y-2 mt-3">
+                <button class="user-btn active-user">User</button>
+                <button class="user-btn">User</button>
+                <button class="user-btn">User</button>
+            </ul>
         </div>
-        <div class="mb-4">
-            <div class="h-64 overflow-y-auto p-4 border rounded">
-                <!-- Сообщения будут добавляться здесь -->
-                <div class="mb-4">
-                    <strong class="font-bold">Имя пользователя:</strong>
-                    <p class="text-gray-700">Текст сообщения...</p>
+        <!-- Основной контент чата -->
+        <div class="w-3/4">
+            <div class="flex justify-between items-center mb-2">
+                <h1 class="text-2xl font-bold">Rio de janiero</h1>
+                <div class="flex items-center">
+                    <h4>id:943828452</h4>
                 </div>
-                <!-- Добавьте больше сообщений по аналогии -->
             </div>
+            <div class="mb-4">
+                <div class="mini-shadow h-64 overflow-y-auto p-3 border rounded">
+                    <!-- Сообщения будут добавляться здесь -->
+                    <div class="mb-4 chat">
+                        <div class="wrap__my-message">
+                            <div class="my-message mb-2">
+                                <p class="text-gray-700 message-text">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vitae quasi repellendus autem sint quod quos eligendi consequuntur est ut mollitia?</p>
+                                <li class="date-message">17.03.2024</li>
+                            </div>
+                        </div>
+                        <div class="wrap__user-message">
+                            <div class="user-message mb-2">
+                                <p class="text-gray-700 message-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ratione reiciendis enim cum eaque incidunt repellendus veritatis doloremque et, amet fugiat impedit tempora porro, quas autem consequuntur nihil numquam corporis dolorum? Sunt modi dolores veniam odio rerum ea molestias, quibusdam quam!</p>
+                                <li class="date-message">17.03.2024</li>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Добавьте больше сообщений по аналогии -->
+                </div>
+            </div>
+            <form class="flex items-center">
+                <input type="text" name="message" class="mini-shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
+                <button type="submit" class="button-send-message mini-shadow bg-orange-500 hover:bg-orange-400 text-white font-bold py-3 px-4 rounded focus:outline-none w-1/4">Send</button>
+            </form>
         </div>
-        <form class="flex items-center">
-            <input type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mr-4 leading-tight focus:outline-none focus:shadow-outline" placeholder="Введите сообщение">
-            <button type="submit" class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Отправить</button>
-        </form>
     </div>
 </body>
 
 
-<script src="/socket.io/socket.io.js"></script>
 <script>
-    socket.on('p', () => {
-        console.log('ASDASDADASDAS')
-    })
+   
 </script>
 </html>
