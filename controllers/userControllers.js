@@ -5,8 +5,8 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Users = require('../schemas/userSchema')
+const Messages = require('../schemas/messageSchema')
 
-const verifyToken = require('../utils/verify')
 
 mongoose.connect('mongodb://localhost/socketdb')
 
@@ -18,20 +18,20 @@ router.get('/registration', async (req, res) => {
 
 router.post('/registration', async (req, res) => {
     const { username, password } = req.body
-    console.log(password)
-    try{
+
+    try {
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = await Users.create({
             username,
             password: hashedPassword
         })
-    
-        const token = await jwt.sign({ user: user._id }, process.env.SECRET_KEY_JWT)
-    
+        let id = user._id
+        const token = await jwt.sign({ id }, process.env.SECRET_KEY_JWT)
+
         return res.json({ ok: true, token })
-    
-    }catch(e){
+
+    } catch (e) {
         console.log(e)
         return res.json({ message: 'Something error...', color: '#ff6054' })
     }
@@ -42,5 +42,71 @@ router.get('/', async (req, res) => {
     res.render('home')
 })
 
+router.get('/users', verifyToken, async (req, res) => {
+    const users = await Users.find({
+        _id: {
+            $ne: req.user
+        }
+    }).lean().exec()
+
+    return res.json({ users })
+})
+router.get('/get-chat/:userId', verifyToken, async (req, res) => {
+    const userId = req.params.userId
+    const recipient = await Users.find({_id: userId}, {username: 1})
+
+    const messages = await Messages.find({
+        $or: [
+            { recipient: userId, sender: req.user },
+            { recipient: req.user, sender: userId },
+        ]
+    }).sort({ date_create: 1 }).lean().exec()
+
+    return res.json({ messages, userNow: req.user, recipient })
+})
+router.post('/send-message/:userId', verifyToken, async (req, res) => {
+    const { message } = req.body
+    const userId = req.params.userId
+
+    if (message.trim()) {
+        await Messages.create({
+            recipient: userId,
+            sender: req.user,
+            text: message
+        })
+
+        return res.json({
+            userNow: req.user,
+            recipient: userId,
+            message
+        })
+    }
+
+})
+
+
+
+//     OTHER          //                //               /             //             / /   
+function verifyToken(req, res, next) {
+
+    if(!req.headers.authorization){
+        return res.json({ message: "Please, register!2", color: '#f0e27c;' });
+    }
+    if (!req.headers.authorization.startsWith('Bearer')) {
+        return res.json({ message: "Please, register!2", color: '#f0e27c;' });
+    }
+    const token = req.headers.authorization.split(' ')[1];
+
+    if (!token) {
+        return res.json({ message: "Please, register!1", color: '#f0e27c;' });
+    }
+
+    jwt.verify(token, process.env.SECRET_KEY_JWT, (err, decoded) => {
+        if (err) console.log(err)
+        req.user = decoded.id
+
+        next()
+    })
+}
 
 module.exports = router

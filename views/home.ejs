@@ -33,49 +33,127 @@
             </div>
 
             <ul class="users space-y-2 mt-3">
-                <button class="user-btn active-user">User</button>
-                <button class="user-btn">User</button>
-                <button class="user-btn">User</button>
+                
             </ul>
         </div>
         <!-- Основной контент чата -->
         <div class="w-3/4">
-            <div class="flex justify-between items-center mb-2">
-                <h1 class="text-2xl font-bold">Rio de janiero</h1>
-                <div class="flex items-center">
-                    <h4>id:943828452</h4>
-                </div>
+             <div class="user-info flex justify-between items-center">
+                
             </div>
-            <div class="mb-4">
+            <div class="chat-container">
                 <div class="mini-shadow h-64 overflow-y-auto p-3 border rounded">
-                    <!-- Сообщения будут добавляться здесь -->
+          
                     <div class="mb-4 chat">
-                        <div class="wrap__my-message">
-                            <div class="my-message mb-2">
-                                <p class="text-gray-700 message-text">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vitae quasi repellendus autem sint quod quos eligendi consequuntur est ut mollitia?</p>
-                                <li class="date-message">17.03.2024</li>
-                            </div>
-                        </div>
-                        <div class="wrap__user-message">
-                            <div class="user-message mb-2">
-                                <p class="text-gray-700 message-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ratione reiciendis enim cum eaque incidunt repellendus veritatis doloremque et, amet fugiat impedit tempora porro, quas autem consequuntur nihil numquam corporis dolorum? Sunt modi dolores veniam odio rerum ea molestias, quibusdam quam!</p>
-                                <li class="date-message">17.03.2024</li>
-                            </div>
-                        </div>
+                        
                     </div>
-                    <!-- Добавьте больше сообщений по аналогии -->
+                   
                 </div>
             </div>
-            <form class="flex items-center">
-                <input type="text" name="message" class="mini-shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
-                <button type="submit" class="button-send-message mini-shadow bg-orange-500 hover:bg-orange-400 text-white font-bold py-3 px-4 rounded focus:outline-none w-1/4">Send</button>
-            </form>
+            <div class="wrap__form-send-message">
+
+            </div>
+            
         </div>
     </div>
 </body>
 
 
 <script>
+    socket.on('chat message', () => {
+
+    })
+
+    $('.form-send-message').submit(e => {
+        e.preventDefault()
+        const form = $(e.currentTarget)
+
+        $.ajax({
+            url: form.attr('action'),
+            method: 'post',
+            data: form.serialize(),
+            headers: {
+                'Authorization': `Bearer ${localStorage.token}`
+            },
+            success: res => {
+                io.emit('chat message', )
+            }
+        })
+    })
    
+
+   $.ajax({
+        url: "/users",
+        method: "get",
+        headers: {
+            'Authorization': `Bearer ${localStorage.token}`
+        },
+        success: res => {
+            if(res.users){
+                for(i of res.users){
+                    $('.users').append(`
+                    <form action="/get-chat/${i._id}" method="get" class="get-chat">
+                        <button type="submit" class="user-btn active-user">${i.username}</button>
+                    </form>
+                    
+                    `)
+                }
+            }
+            $('.get-chat').submit(e => {
+                e.preventDefault()
+                const form = $(e.currentTarget)
+        
+                $.ajax({
+                    url: form.attr('action'),
+                    method: 'get',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.token}`
+                    },
+                    success: res => {
+                        for(i of res.messages){
+                            if(i.sender === res.userNow){
+                                $('.chat').append(`
+                                <div class="wrap__my-message">
+                                    <div class="my-message mb-2">
+                                        <p class="text-gray-700 message-text">${i.text}</p>
+                                        <li class="date-message">${new Date(i.date_created).toLocaleDateString()}</li>
+                                    </div>
+                                </div>
+                            `)
+                            }else{
+                                $('.chat').append(`
+                                    <div class="wrap__user-message">
+                                        <div class="user-message mb-2">
+                                            <p class="text-gray-700 message-text">${i.text}</p>
+                                            <li class="date-message">${new Date(i.date_created).toLocaleDateString()}</li>
+                                        </div>
+                                    </div>
+                                `)
+                            }
+                        }
+
+                        //         OTHER  
+                        $('.user-info').addClass('mb-2')
+                        $('.chat-container').addClass('mb-4')
+
+
+                        $('.user-info').append(`
+                            <h1 class="text-2xl">${res.recipient.username}</h1>
+                            <div class="flex items-center">
+                                <h4>id:${res.recipient._id}</h4>
+                            </div>
+                        `)
+
+                        $('.wrap__form-send-message').append(`
+                            <form class="form-send-message flex items-center" method="post" action="/send-message/${res.recipient._id}">
+                                <input type="text" name="message" class="mini-shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
+                                <button type="submit" class="button-send-message mini-shadow bg-orange-500 hover:bg-orange-400 text-white font-bold py-3 px-4 rounded focus:outline-none w-1/4">Send</button>
+                            </form>
+                        `)
+                    }
+                })
+            })
+        }
+   })
 </script>
 </html>

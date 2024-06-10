@@ -30,7 +30,16 @@ io.use((socket, next) => {
         next()
     })
 })
+io.on('connection', socket => {
+    socket.on('chat message', () => {
+        io.emit('chat message')
+    })
+})
+
 
 app.use(routers)
 
-server.listen(5000)  // NO APP ONLY SERVER
+
+
+
+server.listen(5000)  // NO APP, ONLY SERVER

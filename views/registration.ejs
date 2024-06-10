@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация в чате</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -51,11 +52,15 @@
                 success: res => {
                     if(res.token){
                         localStorage.setItem('token', res.token)
+                        window.location.href = '/'
                     }
-                    window.location.href = '/'
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX error:', textStatus, errorThrown);
                 }
             })
         })
+        
     </script>
 </body>
 </html>
