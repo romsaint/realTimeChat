@@ -51,9 +51,12 @@ router.get('/users', verifyToken, async (req, res) => {
 
     return res.json({ users })
 })
-router.get('/get-chat/:userId', verifyToken, async (req, res) => {
+router.get('/chat/:userId', async (req, res) => {
+    res.render('chat')
+})
+router.get('/chat-data/:userId', verifyToken, async (req, res) => {
     const userId = req.params.userId
-    const recipient = await Users.findOne({_id: userId}, {username: 1})
+    const recipient = await Users.findOne({ _id: userId }, { username: 1 })
 
     const messages = await Messages.find({
         $or: [
@@ -62,29 +65,37 @@ router.get('/get-chat/:userId', verifyToken, async (req, res) => {
         ]
     }).sort({ date_create: 1 }).lean().exec()
 
-    return res.json({ messages, userNow: req.user, recipient })
+    return res.json({
+        recipient,
+        messages,
+        userNow: req.user
+    })
 })
+
 router.post('/send-message/:userId', verifyToken, async (req, res) => {
     const { message } = req.body
     const userId = req.params.userId
-    
-    try{
+
+    try {
         if (message.trim()) {
             const createdMessage = await Messages.create({
                 recipient: userId,
                 sender: req.user,
                 text: message
             })
-    
+
             return res.json({
                 createdAt: createdMessage.date_created,
-                message
+                message,
+                ok: true
             })
         }
-    }catch(e){
+
+        res.json({ok: false})
+    } catch (e) {
         console.log('EEEEEEEEE')
     }
-    
+
 
 })
 
@@ -93,7 +104,7 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
 //     OTHER          //                //               /             //             / /   
 function verifyToken(req, res, next) {
 
-    if(!req.headers.authorization){
+    if (!req.headers.authorization) {
         return res.json({ message: "Please, register!2", color: '#f0e27c;' });
     }
     if (!req.headers.authorization.startsWith('Bearer')) {

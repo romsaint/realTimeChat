@@ -38,9 +38,6 @@
         </div>
         <!-- Основной контент чата -->
         <div class="w-3/4">
-             <div class="user-info flex justify-between items-center">
-                
-            </div>
             <div class="chat-container">
                 <div class="inner-chat-container mini-shadow h-64 overflow-y-auto p-4 border rounded">
           
@@ -49,29 +46,21 @@
                     </div>
                    
                 </div>
+                <div class="inner-chat-container-2 mini-shadow border rounded">
+          
+                    <div class="mb-4 chat">
+                        
+                    </div>
+                   
+                </div>
             </div>
-            <div class="wrap__form-send-message">
 
-            </div>
-            
         </div>
     </div>
 </body>
 
 
 <script>
-    socket.on('chat message', (message, date_created) => {
-        console.log('aSSSSSSSSSSSSSSSSSSSSSS')
-        $('.chat').append(`
-            <div class="wrap__my-message">
-                <div class="my-message mb-2">
-                    <p class="text-gray-700 message-text">${message}</p>
-                    <li class="date-message">${new Date(date_created).toLocaleTimeString().slice(0, 5)}</li>
-                </div>
-            </div>
-        `)
-    })
-   
 
    $.ajax({
         url: "/users",
@@ -83,88 +72,12 @@
             if(res.users){
                 for(i of res.users){
                     $('.users').append(`
-                    <form action="/get-chat/${i._id}" method="get" class="get-chat">
-                        <button type="submit" class="user-btn active-user">${i.username}</button>
-                    </form>
-                    
+                        <div class="get-chat">
+                            <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
+                        </div>
                     `)
                 }
             }
-            $('.get-chat').submit(e => {
-                e.preventDefault()
-                const form = $(e.currentTarget)
-        
-                $.ajax({
-                    url: form.attr('action'),
-                    method: 'get',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.token}`
-                    },
-                    success: res => {
-                        if(res.messages.length > 0){
-                            for(i of res.messages){
-                                if(i.sender === res.userNow){
-                                    $('.chat').append(`
-                                    <div class="wrap__my-message">
-                                        <div class="my-message mb-2">
-                                            <p class="text-gray-700 message-text">${i.text}</p>
-                                            <li class="date-message">${new Date(i.date_created).toLocaleTimeString().slice(0, 5)}</li>
-                                        </div>
-                                    </div>
-                                `)
-                                }else{
-                                    $('.chat').append(`
-                                        <div class="wrap__user-message">
-                                            <div class="user-message mb-2">
-                                                <p class="text-gray-700 message-text">${i.text}</p>
-                                                <li class="date-message">${new Date(i.date_created).toLocaleTimeString().slice(0, 5)}</li>
-                                            </div>
-                                        </div>
-                                    `)
-                                }
-                            }
-                        }
-                        $('.user-info > *').remove()
-                        $('.wrap__form-send-message > *').remove()
-
-                        //         OTHER  
-                        $('.user-info').addClass('mb-2')
-                        $('.chat-container').addClass('mb-4')
-
-
-                        $('.user-info').append(`
-                            <h1 class="text-2xl">${res.recipient.username}</h1>
-                            <div class="flex items-center">
-                                <p>id:${res.recipient._id}</p>
-                            </div>
-                        `)
-
-                        $('.wrap__form-send-message').append(`
-                            <form class="form-send-message flex items-center" method="post" action="/send-message/${res.recipient._id}">
-                                <input type="text" name="message" class="mini-shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
-                                <button type="submit" class="button-send-message mini-shadow bg-orange-500 hover:bg-orange-400 text-white font-bold py-3 px-4 rounded focus:outline-none w-1/4">Send</button>
-                            </form>
-                        `)
-
-                        $('.form-send-message').submit(e => {
-                            e.preventDefault()
-                            const form = $(e.currentTarget)
-                            console.log(form.attr('action'))
-                            $.ajax({
-                                url: form.attr('action'),
-                                method: 'post',
-                                data: form.serialize(),
-                                headers: {
-                                    'Authorization': `Bearer ${localStorage.token}`
-                                },
-                                success: res => {
-                                    socket.emit('chat message', res.message, res.createdAt)
-                                }
-                            })
-                        })
-                    }
-                })
-            })
         }
    })
 </script>
