@@ -8,6 +8,11 @@ const schema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    uniqueUsername: {
+        type: String,
+        required: true,
+        unique: true
     }
 }) 
 

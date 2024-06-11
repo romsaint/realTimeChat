@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Users = require('../schemas/userSchema')
 const Messages = require('../schemas/messageSchema')
+const verifyToken = require('../utils/verify')
 
 
 mongoose.connect('mongodb://localhost/socketdb')
@@ -100,28 +101,21 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
 })
 
 
-
-//     OTHER          //                //               /             //             / /   
-function verifyToken(req, res, next) {
-
-    if (!req.headers.authorization) {
-        return res.json({ message: "Please, register!2", color: '#f0e27c;' });
+router.post('/confirm-unique-username', async (req, res) => {
+    try{
+        const {uniqueUsername} = req.body
+        const isUniqueNameExists = await Users.findOne({
+            uniqueUsername: uniqueUsername
+        })
+    
+        if(isUniqueNameExists){
+            return res.json({message: "A unique username exists"})
+        }
+    
+        res.json({ok: true})
+    }catch(e){
+        return res.json({message: e.message})
     }
-    if (!req.headers.authorization.startsWith('Bearer')) {
-        return res.json({ message: "Please, register!2", color: '#f0e27c;' });
-    }
-    const token = req.headers.authorization.split(' ')[1];
-
-    if (!token) {
-        return res.json({ message: "Please, register!1", color: '#f0e27c;' });
-    }
-
-    jwt.verify(token, process.env.SECRET_KEY_JWT, (err, decoded) => {
-        if (err) console.log(err)
-        req.user = decoded.id
-
-        next()
-    })
-}
+})
 
 module.exports = router
