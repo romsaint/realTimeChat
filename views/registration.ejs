@@ -40,57 +40,41 @@
                 <input type="text" name="uniqueUsername" id="uniqueUsername" class="uniqueUsername shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
             </div>
             <div class="flex items-center justify-between">
-                <button type="submit" class="bg-orange-500 w-full hover:bg-orange-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Зарегистрироваться</button>
+                <button type="submit" class="button-submit bg-orange-500 w-full hover:bg-orange-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Зарегистрироваться</button>
             </div>
         </form>
     </div>
 
     <script>
-        let word = ''
-        $('.uniqueUsername').keypress(e => {
-            let key = e.originalEvent.key
-            
-            word += key
-            const data = `uniqueUsername=${word}`
-        
-            $.ajax({
-                url: '/confirm-unique-username',
-                method: 'post',
-                data: data,
-                success: res => {
-                    if(res.message){
-                        $('.uniqueUsername-container').append(`
-                            <li class="alert-confirm-uniqueUsername" style="list-style: none; font-size: 13px; color: #ff5555; margin-top: 3px">${res.message}</li>
-                        `)
-                    }else{
-                        $('.alert-confirm-uniqueUsername').remove()
-                    }
-                    console.log(res)
-                }
-            })
-        })
         $('.uniqueUsername').keydown(e => {
-            if(e.originalEvent.code === 'Backspace'){
-                word = word.slice(0, word.length - 1)
-            }
+            setTimeout(() => {
+                const form = $(e.currentTarget)
 
-            const data = `uniqueUsername=${word}`
-            
-            $.ajax({
-                url: '/confirm-unique-username',
-                method: 'post',
-                data,
-                success: res => {
-                    if(res.message){
-                        $('.uniqueUsername-container').append(`
-                            <li class="alert-confirm-uniqueUsername" style="list-style: none; font-size: 13px; color: #ff5555; margin-top: 3px">${res.message}</li>
-                        `)
-                    }else{
-                        $('.alert-confirm-uniqueUsername').remove()
+                const data = form.serialize() 
+                $.ajax({
+                    url: '/confirm-unique-username',
+                    method: 'post',
+                    data: data,
+                    success: res => {
+                        if(res.message){
+                            $('.alert-confirm-uniqueUsername').remove()
+                 
+                            $('.button-submit').prop('disabled', true);
+
+                            $('.uniqueUsername-container').append(`
+                                <li class="alert-confirm-uniqueUsername" style="list-style: none; font-size: 13px; color: #ff5555; margin-top: 3px">${res.message}</li>
+                            `)
+                        }else{
+                            $('.alert-confirm-uniqueUsername').remove()
+                            $('.button-submit').prop('disabled', false);
+
+                            $('.uniqueUsername-container').append(`
+                                <li class="alert-confirm-uniqueUsername" style="list-style: none; font-size: 13px; color: #45d7a2; margin-top: 3px">Unique username is available</li>
+                            `)
+                        }
                     }
-                    console.log(res)
-                }
-            })
+                })   
+            }, 0)
         })
 
 

@@ -15,7 +15,7 @@ const schema = new mongoose.Schema({
     },
     date_created: {
         type: Date,
-        default: Date.now()
+        default: () => Date.now()
     }
 })
 

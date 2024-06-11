@@ -60,12 +60,10 @@ li{
     justify-content: end;
     background-color: rgb(225 222 220);
     border-radius: 3px;
-    display: flex;
-    flex-direction: column;
 }
 
 .active-user{
-    background-color: rgb(184, 214, 255);
+    background-color: rgb(213 229 252);
 }
 
 .user-btn{

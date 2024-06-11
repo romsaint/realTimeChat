@@ -18,14 +18,23 @@ router.get('/registration', async (req, res) => {
 })
 
 router.post('/registration', async (req, res) => {
-    const { username, password } = req.body
+    const { username, password, uniqueUsername } = req.body
 
     try {
+        const isUniqueNameExists = await Users.findOne({
+            uniqueUsername: uniqueUsername
+        })
+    
+        if(isUniqueNameExists){
+            return res.json({message: "A unique username exists", color: '#ff6054'})
+        }
+        
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = await Users.create({
             username,
-            password: hashedPassword
+            password: hashedPassword,
+            uniqueUsername
         })
         let id = user._id
         const token = await jwt.sign({ id }, process.env.SECRET_KEY_JWT)
@@ -37,6 +46,37 @@ router.post('/registration', async (req, res) => {
         return res.json({ message: 'Something error...', color: '#ff6054' })
     }
 })
+router.get('/login', async (req, res) => {
+    res.render('login')
+})
+router.post('/login', async (req, res) => {
+    try {
+        const { password, uniqueUsername } = req.body
+
+        const findUser = await Users.findOne({ uniqueUsername }).lean().exec()
+
+        if (findUser) {
+            const hashPassword = findUser.password
+
+            const isPasswordMatch = await bcrypt.compare(password, hashPassword)
+            if (isPasswordMatch) {
+                const id = findUser._id
+
+                const token = jwt.sign({id}, process.env.SECRET_KEY_JWT)
+
+                return res.json({ token});
+            }
+
+            return res.json({ color: '#ff6054', message: "Password didn't match!" });
+        }
+
+        return res.json({ color: '#ff6054', message: "User does not exists!" });
+
+    } catch (e) {
+        return res.json({ color: '#ff6054', message: e.message });
+    }
+})
+
 
 
 router.get('/', async (req, res) => {
@@ -57,7 +97,7 @@ router.get('/chat/:userId', async (req, res) => {
 })
 router.get('/chat-data/:userId', verifyToken, async (req, res) => {
     const userId = req.params.userId
-    const recipient = await Users.findOne({ _id: userId }, { username: 1 })
+    const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 })
 
     const messages = await Messages.find({
         $or: [
@@ -110,6 +150,10 @@ router.post('/confirm-unique-username', async (req, res) => {
     
         if(isUniqueNameExists){
             return res.json({message: "A unique username exists"})
+        }
+
+        if(!uniqueUsername){
+            return res.json({message: "A unique username is required!"})
         }
     
         res.json({ok: true})

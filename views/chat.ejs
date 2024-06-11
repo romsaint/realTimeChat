@@ -38,7 +38,7 @@
         </div>
         <!-- Основной контент чата -->
         <div class="w-3/4 inner-main">
-             <div class="user-info flex justify-between items-center mb-2 rounded bg-gray-100 p-1">
+             <div class="user-info mini-shadow flex justify-between items-center mb-2 rounded bg-gray-100 p-1">
                 
             </div>
             <div class="chat-container">
@@ -114,10 +114,10 @@
             $('.user-info').append(`
                 <h1 class="text-2xl">${res.recipient.username}</h1>
                 <div class="flex items-center">
-                    <p>id:${res.recipient._id}</p>
+                    <p>@${res.recipient.uniqueUsername}</p>
                 </div>
             `)
-
+           
             $('.wrap__form-send-message').append(`
                 <form class="form-send-message flex items-center" method="post" action="/send-message/${res.recipient._id}">
                     <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
