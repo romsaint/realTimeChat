@@ -24,15 +24,16 @@
     });
 
 </script>
-
 <body class="bg-blue-50 flex flex-col items-center justify-center min-h-screen">
     <div class="main bg-white p-8 rounded w-full flex">
         <div class="mini-shadow w-1/4 bg-gray-100 p-4 rounded mr-4">
             <div class="mt-4">
-                <input type="text" name="query" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-200" placeholder="Search user with ID">
+                <form action="/search-users" method="post" class="search-form">
+                    <input type="text" name="query" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-200" placeholder="Search user with ID">
+                </form>
             </div>
 
-            <ul class="users space-y-2 mt-3">
+            <ul class="users  mt-3">
                 
             </ul>
         </div>
@@ -69,9 +70,60 @@
                 </div>
             </div>
         `)
+        
+        let chatH = 0
+        const myMesagesH = $('.chat > *')
+        for(i of myMesagesH){
+            chatH += $(i).height()
+        }
+        $('.inner-chat-container').scrollTop(chatH)
     })
-   
+    
     const url = window.location.href.split('/chat/')[1]
+
+    $('.search-form').keydown(e => {
+        setTimeout(() => {
+            const form = $(e.currentTarget)
+            
+            $.ajax({
+                url: "/search-users",
+                method: 'post',
+                data: form.serialize(),
+                headers: {
+                    'Authorization': `Bearer ${localStorage.token}`
+                },
+                success: res => {
+                    $('.users > *').remove()
+                    if(res.users.length > 0){
+                        for(i of res.users){
+                            if(i._id === url){
+                                $('.users').append(`
+                                <div class="get-chat">
+                                    <a href="/chat/${i._id}" class="user-btn active-user">${i.username}</a>
+                                </div>
+                            `)
+                            }else{
+                                $('.users').append(`
+                                    <div class="get-chat">
+                                        <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
+                                    </div>
+                                `)
+                            }
+                        }
+                    }else{
+                        console.log(res)
+                        $('.users').append(`
+                            <div class="not-found-search bg-amber-200">
+                                <center>
+                                    <h2>Not found...</h2>
+                                </center>
+                            </div>
+                        `)
+                    }
+                }
+            })
+        }, 0)
+    })
 
     $.ajax({
         url: `/chat-data/${url}`,
@@ -121,14 +173,21 @@
             $('.wrap__form-send-message').append(`
                 <form class="form-send-message flex items-center" method="post" action="/send-message/${res.recipient._id}">
                     <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
-                    <button type="submit" class="button-send-message mini-shadow bg-orange-500 hover:bg-orange-400 text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
+                    <button type="submit" class="button-send-message mini-shadow text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
                 </form>
             `)
+
+            let chatH = 0
+            const myMesagesH = $('.chat > *')
+            for(i of myMesagesH){
+                chatH += $(i).height()
+            }
+            $('.inner-chat-container').scrollTop(chatH)
 
             $('.form-send-message').submit(e => {
                 e.preventDefault()
                 const form = $(e.currentTarget)
-                console.log(form.attr('action'))
+           
                 $.ajax({
                     url: form.attr('action'),
                     method: 'post',
@@ -139,6 +198,8 @@
                     success: res => {
                         if(res.ok){
                             socket.emit('chat message', res.message, res.createdAt)
+                            
+                            
                             $('.input-send').val('')
                         }
                     }
@@ -148,7 +209,7 @@
     })
 
    $.ajax({
-        url: "/users",
+        url: "/acquaintances",
         method: "get",
         headers: {
             'Authorization': `Bearer ${localStorage.token}`
@@ -164,12 +225,14 @@
                     `)
                     }else{
                         $('.users').append(`
-                        <div class="get-chat">
-                            <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
-                        </div>
-                    `)
+                            <div class="get-chat">
+                                <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
+                            </div>
+                        `)
                     }
                 }
+                
+           
             }
         }
    })

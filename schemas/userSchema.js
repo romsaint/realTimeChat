@@ -13,7 +13,12 @@ const schema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true
+    },
+    date_created: {
+        type: Date,
+        default: () => Date.now()
     }
 }) 
+
 
 module.exports = mongoose.model('user', schema)

@@ -29,7 +29,9 @@
     <div class="main bg-white p-8 rounded w-full flex">
         <div class="mini-shadow w-1/4 bg-gray-100 p-4 rounded mr-4">
             <div class="mt-4">
-                <input type="text" name="query" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500" placeholder="Search user with ID">
+                <form action="/search-users" class="search-form" method="post">
+                    <input type="text" name="query" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500" placeholder="Search user with ID">
+                </form>
             </div>
 
             <ul class="users space-y-2 mt-3">
@@ -61,9 +63,54 @@
 
 
 <script>
+    const url = window.location.href.split('/chat/')[1]
 
+    $('.search-form').keydown(e => {
+        setTimeout(() => {
+            const form = $(e.currentTarget)
+            
+            $.ajax({
+                url: "/search-users",
+                method: 'post',
+                data: form.serialize(),
+                headers: {
+                    'Authorization': `Bearer ${localStorage.token}`
+                },
+                success: res => {
+                    $('.users > *').remove()
+                    if(res.users.length > 0){
+                        for(i of res.users){
+                            if(i._id === url){
+                                $('.users').append(`
+                                <div class="get-chat">
+                                    <a href="/chat/${i._id}" class="user-btn active-user">${i.username}</a>
+                                </div>
+                            `)
+                            }else{
+                                $('.users').append(`
+                                    <div class="get-chat">
+                                        <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
+                                    </div>
+                                `)
+                            }
+                        }
+                    }else{
+                        $('.users').append(`
+                            <div class="not-found-search bg-amber-200">
+                                <center>
+                                    <h2>Not found...</h2>
+                                </center>
+                            </div>
+                        `)
+                    }
+                    console.log(res)
+                }
+            })
+        }, 0)
+    })
+    
    $.ajax({
-        url: "/users",
+        url: "/acquaintances",
         method: "get",
         headers: {
             'Authorization': `Bearer ${localStorage.token}`

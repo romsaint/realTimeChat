@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken')
 const Users = require('../schemas/userSchema')
 const Messages = require('../schemas/messageSchema')
 const verifyToken = require('../utils/verify')
+const {ObjectId} = require('mongoose').Types
 
 
 mongoose.connect('mongodb://localhost/socketdb')
@@ -24,11 +25,11 @@ router.post('/registration', async (req, res) => {
         const isUniqueNameExists = await Users.findOne({
             uniqueUsername: uniqueUsername
         })
-    
-        if(isUniqueNameExists){
-            return res.json({message: "A unique username exists", color: '#ff6054'})
+
+        if (isUniqueNameExists) {
+            return res.json({ message: "A unique username exists", color: '#ff6054' })
         }
-        
+
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = await Users.create({
@@ -62,9 +63,9 @@ router.post('/login', async (req, res) => {
             if (isPasswordMatch) {
                 const id = findUser._id
 
-                const token = jwt.sign({id}, process.env.SECRET_KEY_JWT)
+                const token = jwt.sign({ id }, process.env.SECRET_KEY_JWT)
 
-                return res.json({ token});
+                return res.json({ token });
             }
 
             return res.json({ color: '#ff6054', message: "Password didn't match!" });
@@ -83,15 +84,34 @@ router.get('/', async (req, res) => {
     res.render('home')
 })
 
-router.get('/users', verifyToken, async (req, res) => {
-    const users = await Users.find({
-        _id: {
-            $ne: req.user
-        }
-    }).lean().exec()
+router.get('/acquaintances', verifyToken, async (req, res) => {
+    const messagesDirty = await Messages.find().lean().exec();
 
-    return res.json({ users })
-})
+    const messagesSet = new Set();
+ 
+    for (let message of messagesDirty) {
+        const senderId = new mongoose.Types.ObjectId(message.sender);
+        const recipientId = new mongoose.Types.ObjectId(message.recipient);
+    
+        if (senderId.equals(new mongoose.Types.ObjectId(req.user))) {
+            messagesSet.add(recipientId);
+        }
+        if (recipientId.equals(new mongoose.Types.ObjectId(req.user))) {
+            messagesSet.add(senderId);
+        }
+    }
+
+    const messages = Array.from(messagesSet);
+
+    const users = await Users.find({
+        $and: [
+            { _id: { $ne: req.user } },
+            { _id: { $in: messages } }
+        ]
+    }).lean().exec();
+
+    return res.json({ users });
+});
 router.get('/chat/:userId', async (req, res) => {
     res.render('chat')
 })
@@ -132,7 +152,7 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
             })
         }
 
-        res.json({ok: false})
+        res.json({ ok: false })
     } catch (e) {
         console.log('EEEEEEEEE')
     }
@@ -142,24 +162,72 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
 
 
 router.post('/confirm-unique-username', async (req, res) => {
-    try{
-        const {uniqueUsername} = req.body
+    try {
+        const { uniqueUsername } = req.body
         const isUniqueNameExists = await Users.findOne({
             uniqueUsername: uniqueUsername
-        })
-    
-        if(isUniqueNameExists){
-            return res.json({message: "A unique username exists"})
+        }).lean()
+
+        if (isUniqueNameExists) {
+            return res.json({ message: "A unique username exists" })
         }
 
-        if(!uniqueUsername){
-            return res.json({message: "A unique username is required!"})
+        if (!uniqueUsername) {
+            return res.json({ message: "A unique username is required!" })
         }
-    
-        res.json({ok: true})
-    }catch(e){
-        return res.json({message: e.message})
+
+        res.json({ ok: true })
+    } catch (e) {
+        return res.json({ message: e.message })
     }
 })
+
+router.post('/search-users', verifyToken, async (req, res) => {
+    const { query } = req.body
+
+    if (!query.trim()) {
+        const messagesDirty = await Messages.find().lean().exec();
+
+        const messagesSet = new Set();
+     
+        for (let message of messagesDirty) {
+            const senderId = new mongoose.Types.ObjectId(message.sender);
+            const recipientId = new mongoose.Types.ObjectId(message.recipient);
+        
+            if (senderId.equals(new mongoose.Types.ObjectId(req.user))) {
+                messagesSet.add(recipientId);
+            }
+            if (recipientId.equals(new mongoose.Types.ObjectId(req.user))) {
+                messagesSet.add(senderId);
+            }
+        }
+    
+        const messages = Array.from(messagesSet);
+    
+        const users = await Users.find({
+            $and: [
+                { _id: { $ne: req.user } },
+                { _id: { $in: messages } }
+            ]
+        }).lean().exec();
+    
+        return res.json({ users });
+    }
+
+    const users = await Users.find({
+        $and: [
+            { uniqueUsername: new RegExp(`^${query}`) },
+            {
+                _id: {
+                    $ne: req.user
+                }
+            }
+        ]
+    }, { username: 1 }).lean().exec()
+
+    return res.json({ users })
+})
+
+
 
 module.exports = router

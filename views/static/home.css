@@ -53,6 +53,12 @@ li{
     text-align: center;
 }
 
+.not-found-search{
+    padding: 10px;
+    border-radius: 10px;
+    
+}
+
 .chat-container{
     height: 100%;
     display: flex;
