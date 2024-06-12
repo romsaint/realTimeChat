@@ -70,7 +70,7 @@
                 </div>
             </div>
         `)
-        
+
         let chatH = 0
         const myMesagesH = $('.chat > *')
         for(i of myMesagesH){
@@ -111,7 +111,6 @@
                             }
                         }
                     }else{
-                        console.log(res)
                         $('.users').append(`
                             <div class="not-found-search bg-amber-200">
                                 <center>
@@ -215,6 +214,7 @@
             'Authorization': `Bearer ${localStorage.token}`
         },
         success: res => {
+            let time = Date.now()
             if(res.users){
                 for(i of res.users){
                     if(i._id === url){
@@ -231,8 +231,7 @@
                         `)
                     }
                 }
-                
-           
+                console.log(Date.now() - time)
             }
         }
    })

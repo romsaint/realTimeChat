@@ -4,13 +4,18 @@ const router = express.Router()
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const NodeCache = require('node-cache')
+
 const Users = require('../schemas/userSchema')
 const Messages = require('../schemas/messageSchema')
+
 const verifyToken = require('../utils/verify')
-const {ObjectId} = require('mongoose').Types
+const { ObjectId } = require('mongoose').Types
 
 
 mongoose.connect('mongodb://localhost/socketdb')
+
+const cache = new NodeCache()
 
 
 router.get('/registration', async (req, res) => {
@@ -85,14 +90,18 @@ router.get('/', async (req, res) => {
 })
 
 router.get('/acquaintances', verifyToken, async (req, res) => {
-    const messagesDirty = await Messages.find().lean().exec();
+    const messagesDirty = await Messages.find({}, {recipient: 1, sender: 1}).lean().exec();
+
+    let messagesDirtySet = new Set(messagesDirty)
+
+    let messagesArr = Array.from(messagesDirtySet)
 
     const messagesSet = new Set();
- 
-    for (let message of messagesDirty) {
+
+    for (let message of messagesArr) {
         const senderId = new mongoose.Types.ObjectId(message.sender);
         const recipientId = new mongoose.Types.ObjectId(message.recipient);
-    
+
         if (senderId.equals(new mongoose.Types.ObjectId(req.user))) {
             messagesSet.add(recipientId);
         }
@@ -112,25 +121,79 @@ router.get('/acquaintances', verifyToken, async (req, res) => {
 
     return res.json({ users });
 });
+
+
+/* 
+router.get('/acquaintances', verifyToken, async (req, res) => {
+    const messagesDirty = await Messages.find().lean().exec();
+
+    const messagesSet = new Set();
+
+    for (let message of messagesDirty) {
+        const senderId = new mongoose.Types.ObjectId(message.sender);
+        const recipientId = new mongoose.Types.ObjectId(message.recipient);
+
+        if (senderId.equals(new mongoose.Types.ObjectId(req.user))) {
+            messagesSet.add(recipientId);
+        }
+        if (recipientId.equals(new mongoose.Types.ObjectId(req.user))) {
+            messagesSet.add(senderId);
+        }
+    }
+
+    const messages = Array.from(messagesSet);
+
+    const users = await Users.find({
+        $and: [
+            { _id: { $ne: req.user } },
+            { _id: { $in: messages } }
+        ]
+    }).lean().exec();
+    
+    return res.json({ users });
+});*/
+
 router.get('/chat/:userId', async (req, res) => {
     res.render('chat')
 })
+
 router.get('/chat-data/:userId', verifyToken, async (req, res) => {
     const userId = req.params.userId
-    const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 })
-
-    const messages = await Messages.find({
-        $or: [
-            { recipient: userId, sender: req.user },
-            { recipient: req.user, sender: userId },
-        ]
-    }).sort({ date_create: 1 }).lean().exec()
-
-    return res.json({
-        recipient,
-        messages,
-        userNow: req.user
-    })
+    const cacheKey = `messeges_${userId}-${req.user}`
+    try{
+        if(cache.get(cacheKey)){
+            const {recipient, messages, userNow} = cache.get(cacheKey)
+    
+            return res.json({
+                recipient,
+                messages,
+                userNow
+            })
+        }
+    
+        const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 })
+    
+        const messages = await Messages.find({
+            $or: [
+                { recipient: userId, sender: req.user },
+                { recipient: req.user, sender: userId },
+            ]
+        }).sort({ date_create: 1 }).lean().exec()
+    
+        cache.set(cacheKey, {
+            recipient,
+            messages,
+            userNow: req.user
+        })
+    
+        return res.json({
+            recipient,
+            messages,
+            userNow: req.user
+        })
+    }catch(e){
+        console.log(e.message)
+    }
 })
 
 router.post('/send-message/:userId', verifyToken, async (req, res) => {
@@ -144,6 +207,16 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
                 sender: req.user,
                 text: message
             })
+            
+            const cacheKey = `messeges_${userId}-${req.user}`
+            
+            if(cache.get(cacheKey)){
+                const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 })
+
+                const cacheData = cache.get(cacheKey).messages.concat([createdMessage])
+  
+                cache.set(cacheKey, {messages: cacheData, recipient, userNow: req.user })
+            }
 
             return res.json({
                 createdAt: createdMessage.date_created,
@@ -154,10 +227,8 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
 
         res.json({ ok: false })
     } catch (e) {
-        console.log('EEEEEEEEE')
+        console.log(e.message)
     }
-
-
 })
 
 
@@ -189,11 +260,11 @@ router.post('/search-users', verifyToken, async (req, res) => {
         const messagesDirty = await Messages.find().lean().exec();
 
         const messagesSet = new Set();
-     
+
         for (let message of messagesDirty) {
             const senderId = new mongoose.Types.ObjectId(message.sender);
             const recipientId = new mongoose.Types.ObjectId(message.recipient);
-        
+
             if (senderId.equals(new mongoose.Types.ObjectId(req.user))) {
                 messagesSet.add(recipientId);
             }
@@ -201,16 +272,16 @@ router.post('/search-users', verifyToken, async (req, res) => {
                 messagesSet.add(senderId);
             }
         }
-    
+
         const messages = Array.from(messagesSet);
-    
+
         const users = await Users.find({
             $and: [
                 { _id: { $ne: req.user } },
                 { _id: { $in: messages } }
             ]
         }).lean().exec();
-    
+
         return res.json({ users });
     }
 

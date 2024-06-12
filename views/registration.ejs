@@ -18,6 +18,12 @@
 
 </script>
 
+<style>
+    .mini-shadow{
+        box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.04);
+    }
+</style>
+
 <body class="bg-blue-100 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded shadow-lg max-w-sm w-full">
         <div class="flex justify-center mb-6">
@@ -29,15 +35,15 @@
         <form action="/registration" method="post" class="form-reg">
             <div class="mb-4">
                 <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
-                <input type="text" name="username" id="username" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <input type="text" name="username" id="username" class="mini-shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
             </div>
             <div class="mb-4">
                 <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                <input type="password" name="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <input type="password" name="password" id="password" class="mini-shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
             </div>
             <div class="mb-4 uniqueUsername-container">
                 <label for="uniqueUsername" class="block text-gray-700 text-sm font-bold mb-2">Unique name</label>
-                <input type="text" name="uniqueUsername" id="uniqueUsername" class="uniqueUsername shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <input type="text" name="uniqueUsername" id="uniqueUsername" class="uniqueUsername mini-shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
             </div>
             <div class="flex items-center justify-between">
                 <button type="submit" class="button-submit bg-orange-500 w-full hover:bg-orange-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Register</button>
