@@ -26,8 +26,11 @@
 </script>
 <body class="bg-blue-50 flex flex-col items-center justify-center min-h-screen">
     <div class="main bg-white p-8 rounded w-full flex">
-        <div class="mini-shadow w-1/4 bg-gray-100 p-4 rounded mr-4">
-            <div class="mt-4">
+        <div class="left-side mini-shadow w-1/4 bg-gray-100 p-4 rounded mr-4">
+            <div class="menu-search mt-4 flex">
+                <a href="#" class="a__svg-menu">
+                    <svg viewBox="0 0 24 24" class="svg-menu" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 6H20M4 12H20M4 18H20" stroke="#3fa695" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                </a>
                 <form action="/search-users" method="post" class="search-form">
                     <input type="text" name="query" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-200" placeholder="Search user with ID">
                 </form>
@@ -39,7 +42,7 @@
         </div>
         <!-- Основной контент чата -->
         <div class="w-3/4 inner-main">
-             <div class="user-info mini-shadow flex justify-between items-center mb-2 rounded bg-gray-100 p-1">
+            <div class="user-info mini-shadow flex justify-between items-center mb-2 rounded bg-gray-100 p-1">
                 
             </div>
             <div class="chat-container">
@@ -54,14 +57,30 @@
             <div class="wrap__form-send-message">
 
             </div>
-            
+        </div>
+    </div>
+
+    <!-- Выдвигающаяся шторка -->
+    <div id="drawer" class="drawer">
+        <div class="menu">
+            <div class="inner-menu">
+                <div class="text-menu">
+                    <center>
+                        <h4 class="menu-name">Menu</h4>
+                    </center>
+                </div>
+                <div class="links">
+                    <a href="/create-chat" class="menu-link create-chat-link">Create chat</a>
+                </div>
+            </div>
         </div>
     </div>
 </body>
 
 
 <script>
-    socket.on('chat message', (message, date_created) => {
+
+    socket.on('user message', (message, date_created) => {
         $('.chat').append(`
             <div class="wrap__my-message">
                 <div class="my-message mb-2">
@@ -196,7 +215,7 @@
                     },
                     success: res => {
                         if(res.ok){
-                            socket.emit('chat message', res.message, res.createdAt)
+                            socket.emit('user message', res.message, res.createdAt)
                             
                             
                             $('.input-send').val('')
@@ -214,7 +233,6 @@
             'Authorization': `Bearer ${localStorage.token}`
         },
         success: res => {
-            let time = Date.now()
             if(res.users){
                 for(i of res.users){
                     if(i._id === url){
@@ -231,8 +249,113 @@
                         `)
                     }
                 }
-                console.log(Date.now() - time)
             }
+            
+            const drawer = $('#drawer');
+            const svgMenu = $('.a__svg-menu');
+
+            svgMenu.click(function(e) {
+                e.preventDefault();
+                
+                drawer.toggleClass('open');
+                drawer.css({'left': '2%', 'height': `462px`, 'top': '19.3%', 'width': '14%'})
+
+                $('.create-chat-link').click(e => {
+                    e.preventDefault()
+  
+                    $('.inner-main > *').remove()
+                    $('.inner-main').append(`
+                        <div class="bg-green-50 p-8 rounded shadow w-full h-full flex flex-col">
+                            <h1 class="text-center text-2xl font-bold mb-6">Create chat</h1>
+                            <div class="wrap__alert-chat-create">
+                
+                            </div>
+                            <form action="/create-chat" method="post" class="form-create-chat flex flex-col h-full">
+                                <div class="mb-4">
+                                    <label for="chatName" class="block text-gray-700 text-sm font-bold mb-2">Chat name</label>
+                                    <input type="chatName" name="chatName" id="chatName" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                </div>
+                                <div class="mb-4 uniqueChatName-container">
+                                    <label for="uniqueChatName" class="block text-gray-700 text-sm font-bold mb-2">Unique chat name</label>
+                                    <input type="text" name="uniqueChatName" id="uniqueChatName" class="uniqueChatName appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                </div>
+                                <div class="mb-4 max-users-container">
+                                    <label for="max-users" class="block text-gray-700 text-sm font-bold mb-2">Max users in chat</label>
+                                    <input type="number" name="maxUsers" id="max-users" class="max-users appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div class="flex items-center justify-between mt-auto">
+                                    <button type="submit" class="button-submit-create-chat bg-blue-500 w-full hover:bg-blue-400 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline">Create</button>
+                                </div>
+                            </form>
+                        </div>
+                    `)
+
+                    $('.uniqueChatName').keydown(e => {
+                        setTimeout(() => {
+                            const form = $(e.currentTarget)
+                            $.ajax({
+                                url: "/confirm-unique-chatname",
+                                method: "post",
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.token}`
+                                },
+                                data: form.serialize(),
+                                success: res => {
+                                    if(!res.ok){
+                                        $('.alert-confirm-uniqueChat').remove()
+                             
+                                        $('.button-submit-create-chat').prop('disabled', true);
+            
+                                        $('.uniqueChatName-container').append(`
+                                            <li class="alert-confirm-uniqueChat" style="list-style: none; font-size: 13px; color: #ff5555; margin-top: 3px">${res.message}</li>
+                                        `)
+                                    }else{
+                                        $('.alert-confirm-uniqueChat').remove()
+                                        $('.button-submit-create-chat').prop('disabled', false);
+            
+                                        $('.uniqueChatName-container').append(`
+                                            <li class="alert-confirm-uniqueChat" style="list-style: none; font-size: 13px; color: #45d7a2; margin-top: 3px">Unique chat name is available!</li>
+                                        `)
+                                    }
+                                }
+                            })
+                        }, 0)
+                    })
+
+                    $('.form-create-chat').submit(e => {
+                        e.preventDefault()
+                        const form = $(e.currentTarget)
+
+                        $.ajax({
+                            url: '/create-chat',
+                            method: "post",
+                            data: form.serialize(),
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.token}`
+                            },
+                            success: res => {
+                                if(res.ok){
+                                    socket.emit('join room', res.uniqueChatName)
+                                    window.location.href = '/'
+                                }else{
+                                    $('.wrap__alert-chat-create').append(`
+                                        <div class="alert-confirm-uniqueUsername bg-red-100 mb-4 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                                            <strong class="font-bold">Error:</strong>
+                                            <span class="block sm:inline">${res.message}</span>
+                                            <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                                                <svg class="svg-close fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                                            </span>
+                                        </div>
+                                    `)
+                                }
+                            }
+                        })
+                    })
+                   })
+            });
+            drawer.mouseleave(() => {
+                drawer.css({'left': '-20%'})
+            })
         }
    })
 </script>
