@@ -81,8 +81,12 @@
 
 
 <script>
-    const url = window.location.href.split('/chat/')[1]
+    if(!localStorage.token){
+        window.location.href = '/registration'
+    }
 
+    const url = window.location.href.split('/chat/')[1]
+    
     $('.search-form').keydown(e => {
         setTimeout(() => {
             const form = $(e.currentTarget)

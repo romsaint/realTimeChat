@@ -47,7 +47,7 @@ li{
     align-items: end;
     margin-left: 5px;
 }
-.get-chat{
+.get-user{
     display: flex;
     margin-bottom: 15px;
     text-align: center;
@@ -72,6 +72,7 @@ li{
     overflow: auto;
     max-height: 85%;
     padding-right: 7px;
+    border-bottom: 2px solid #b7b7b7;
 }
 .users::-webkit-scrollbar {
     background-color: #f5f5f5;
@@ -94,6 +95,7 @@ li{
     border-radius: 15px;
     border: 1px solid rgb(80, 80, 80);
 }
+
 
 
 
@@ -191,4 +193,31 @@ li{
     border-radius: 2px;
     background: #9ac4e5;
     color: white;
+}
+
+
+.get-chat{
+    width: 100%;
+    display: flex;
+    text-align: center;
+    margin-bottom: 15px;
+}
+.chat-btn{
+    width: 100%;
+    padding: 5px;
+    border-radius: 2px;
+    border: 1px solid #a8a8a8;
+    color: #3d3d3d;
+}
+.active-chat-btn{
+    width: 100%;
+    padding: 5px;
+    border-radius: 2px;
+    border: 1px solid #a8a8a8;
+    color: #3d3d3d;
+    background-color: #b2d5f9;
+}
+
+.message-text-name{
+    font-size: 10px;
 }

@@ -39,6 +39,9 @@
             <ul class="users  mt-3">
                 
             </ul>
+            <ul class="chats mt-3">
+
+            </ul>
         </div>
         <!-- Основной контент чата -->
         <div class="w-3/4 inner-main">
@@ -79,13 +82,16 @@
 
 
 <script>
+    if(!localStorage.token){
+        window.location.href = '/registration'
+    }
 
-    socket.on('user message', (message, date_created) => {
+    socket.on('user message', (message) => {
         $('.chat').append(`
             <div class="wrap__my-message">
                 <div class="my-message mb-2">
-                    <p class="text-gray-700 message-text">${message}</p>
-                    <li class="date-message">${new Date(date_created).toLocaleTimeString().slice(0, 5)}</li>
+                    <p class="text-gray-700 message-text">${message.text}</p>
+                    <li class="date-message">${new Date(message.date_created).toLocaleTimeString().slice(0, 5)}</li>
                 </div>
             </div>
         `)
@@ -97,7 +103,26 @@
         }
         $('.inner-chat-container').scrollTop(chatH)
     })
-    
+    socket.on('chat message', (message, sender) => {
+        $('.chat').append(`
+            <div class="wrap__my-message">
+                <div class="my-message mb-2">
+                    <div class="name-container">
+                        <p class="text-gray-700 message-text">${message.text}</p>
+                    </div>
+                    <li class="date-message">${new Date(message.date_created).toLocaleTimeString().slice(0, 5)}</li>
+                </div>
+            </div>
+        `)
+
+        let chatH = 0
+        const myMesagesH = $('.chat > *')
+        for(i of myMesagesH){
+            chatH += $(i).height()
+        }
+        $('.inner-chat-container').scrollTop(chatH)
+    })
+    //      SOCKET END          //           //
     const url = window.location.href.split('/chat/')[1]
 
     $('.search-form').keydown(e => {
@@ -117,13 +142,13 @@
                         for(i of res.users){
                             if(i._id === url){
                                 $('.users').append(`
-                                <div class="get-chat">
+                                <div class="get-user">
                                     <a href="/chat/${i._id}" class="user-btn active-user">${i.username}</a>
                                 </div>
                             `)
                             }else{
                                 $('.users').append(`
-                                    <div class="get-chat">
+                                    <div class="get-user">
                                         <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
                                     </div>
                                 `)
@@ -144,20 +169,102 @@
     })
 
     $.ajax({
-        url: `/chat-data/${url}`,
+        url: `/user-data/${url}`,
         method: 'get',
         headers: {
             'Authorization': `Bearer ${localStorage.token}`
         },
         success: res => {
-            if(res.messages.length > 0){
-                for(i of res.messages){
-                    if(i.sender === res.userNow){
+            if(res.messages){
+                if(res.messages.length > 0){
+                    for(i of res.messages){
+                        console.log()
+                        if(i.sender === res.userNow){
+                            $('.chat').append(`
+                            <div class="wrap__my-message">
+                                <div class="my-message mb-2">
+                                    <p class="text-gray-700 message-text">${i.text}</p>
+                                    <li class="date-message">${new Date(i.date_created).toLocaleTimeString().slice(0, 5)}</li>
+                                </div>
+                            </div>
+                        `)
+                        }else{
+                            $('.chat').append(`
+                                <div class="wrap__user-message">
+                                    <div class="user-message mb-2">
+                                        <p class="text-gray-700 message-text">${i.text}</p>
+                                        <li class="date-message">${new Date(i.date_created).toLocaleTimeString().slice(0, 5)}</li>
+                                    </div>
+                                </div>
+                            `)
+                        }
+                    }
+                }
+                $('.user-info > *').remove()
+                $('.wrap__form-send-message > *').remove()
+    
+                //         OTHER  
+                $('.user-info').addClass('mb-2')
+                $('.chat-container').addClass('mb-4')
+    
+    
+                $('.user-info').append(`
+                    <h1 class="text-2xl">${res.recipient.username}</h1>
+                    <div class="flex items-center">
+                        <p>@${res.recipient.uniqueUsername}</p>
+                    </div>
+                `)
+    
+                $('.wrap__form-send-message').append(`
+                    <form class="form-send-message flex items-center" method="post" action="/send-message/${res.recipient._id}">
+                        <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
+                        <button type="submit" class="button-send-message mini-shadow text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
+                    </form>
+                `)
+            
+               
+    
+                let chatH = 0
+                const myMesagesH = $('.chat > *')
+                for(i of myMesagesH){
+                    chatH += $(i).height()
+                }
+                $('.inner-chat-container').scrollTop(chatH)
+    
+                $('.form-send-message').submit(e => {
+                    e.preventDefault()
+                    const form = $(e.currentTarget)
+               
+                    $.ajax({
+                        url: form.attr('action'),
+                        method: 'post',
+                        data: form.serialize(),
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.token}`
+                        },
+                        success: res => {
+                            if(res.ok){
+                                socket.emit('user message', res.createdMessage)
+                            
+                                $('.input-send').val('')
+                            }
+                        }
+                    })
+                })
+            }
+
+            //     CHAT   CHAT     CHAT       CHAT            CHAT                CHAT                    CHAT
+
+            if(res.chatData){
+              
+                for(let i = 0; i < res.chatData.length; i++){
+ 
+                    if(res.chatData[i].sender._id === res.userNow._id || res.chatData[i].sender._id === res.userNow){
                         $('.chat').append(`
                         <div class="wrap__my-message">
                             <div class="my-message mb-2">
-                                <p class="text-gray-700 message-text">${i.text}</p>
-                                <li class="date-message">${new Date(i.date_created).toLocaleTimeString().slice(0, 5)}</li>
+                                <p class="text-gray-700 message-text">${res.chatData[i].text}</p>
+                                <li class="date-message">${new Date(res.chatData[i].date_created).toLocaleTimeString().slice(0, 5)}</li>
                             </div>
                         </div>
                     `)
@@ -165,64 +272,62 @@
                         $('.chat').append(`
                             <div class="wrap__user-message">
                                 <div class="user-message mb-2">
-                                    <p class="text-gray-700 message-text">${i.text}</p>
-                                    <li class="date-message">${new Date(i.date_created).toLocaleTimeString().slice(0, 5)}</li>
+                                    <div class="name-container">
+                                        <p class="text-gray-500 message-text-name">${res.chatData[i].sender.username}</p>
+                                        <p class="text-gray-700 message-text">${res.chatData[i].text}</p>
+                                    </div>
+                                    <li class="date-message">${new Date(res.chatData[i].date_created).toLocaleTimeString().slice(0, 5)}</li>
                                 </div>
                             </div>
                         `)
                     }
                 }
-            }
-            $('.user-info > *').remove()
-            $('.wrap__form-send-message > *').remove()
-
-            //         OTHER  
-            $('.user-info').addClass('mb-2')
-            $('.chat-container').addClass('mb-4')
 
 
-            $('.user-info').append(`
-                <h1 class="text-2xl">${res.recipient.username}</h1>
-                <div class="flex items-center">
-                    <p>@${res.recipient.uniqueUsername}</p>
-                </div>
-            `)
-           
-            $('.wrap__form-send-message').append(`
-                <form class="form-send-message flex items-center" method="post" action="/send-message/${res.recipient._id}">
-                    <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
-                    <button type="submit" class="button-send-message mini-shadow text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
-                </form>
-            `)
+                $('.user-info > *').remove()
+                $('.wrap__form-send-message > *').remove()
 
-            let chatH = 0
-            const myMesagesH = $('.chat > *')
-            for(i of myMesagesH){
-                chatH += $(i).height()
-            }
-            $('.inner-chat-container').scrollTop(chatH)
+                $('.user-info').addClass('mb-2')
+                $('.chat-container').addClass('mb-4')
+    
+                $('.user-info').append(`
+                    <h1 class="text-2xl">${res.chatRecipient.chatName}</h1>
+                    <div class="flex items-center">
+                        <p>@${res.chatRecipient.uniqueChatName}</p>
+                        <p class="users-quantity ml-2">${res.chatRecipient.members.length} users</p>
+                    </div>
+                `)
 
-            $('.form-send-message').submit(e => {
-                e.preventDefault()
-                const form = $(e.currentTarget)
-           
-                $.ajax({
-                    url: form.attr('action'),
-                    method: 'post',
-                    data: form.serialize(),
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.token}`
-                    },
-                    success: res => {
-                        if(res.ok){
-                            socket.emit('user message', res.message, res.createdAt)
-                            
-                            
-                            $('.input-send').val('')
+                $('.wrap__form-send-message').append(`
+                    <form class="form-send-message flex items-center" method="post" action="/send-message/${res.chatRecipient._id}">
+                        <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
+                        <button type="submit" class="button-send-message mini-shadow text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
+                    </form>
+                `)
+                    
+                $('.form-send-message').submit(e => {
+                    e.preventDefault()
+                    const form = $(e.currentTarget)
+
+                    $.ajax({
+                        url: form.attr('action'),
+                        method: "post",
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.token}`
+                        },
+                        data: form.serialize(),
+                        success: res => {
+                            if(res.ok){
+                                socket.emit('message room', res.room, res.createdMessage, res.sender)
+
+                                $('.input-send').val('')
+                            }
                         }
-                    }
+                    })
                 })
-            })
+            }
+            //      END             END                  END
+
         }
     })
 
@@ -237,13 +342,13 @@
                 for(i of res.users){
                     if(i._id === url){
                         $('.users').append(`
-                        <div class="get-chat">
+                        <div class="get-user">
                             <a href="/chat/${i._id}" class="user-btn active-user">${i.username}</a>
                         </div>
                     `)
                     }else{
                         $('.users').append(`
-                            <div class="get-chat">
+                            <div class="get-user">
                                 <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
                             </div>
                         `)
@@ -335,7 +440,6 @@
                             },
                             success: res => {
                                 if(res.ok){
-                                    socket.emit('join room', res.uniqueChatName)
                                     window.location.href = '/'
                                 }else{
                                     $('.wrap__alert-chat-create').append(`
@@ -356,6 +460,37 @@
             drawer.mouseleave(() => {
                 drawer.css({'left': '-20%'})
             })
+        }
+   })
+
+   //    CHATS      ??       CHATS
+   $.ajax({
+        url: "/chats",
+        method: "get",
+        headers: {
+            'Authorization': `Bearer ${localStorage.token}`
+        },
+        success: res => {
+            if(res.chats.length > 0){
+                for(i of res.chats){
+                    if(i._id === url){
+                        $('.chats').append(`
+                            <div class="get-chat">
+                                <a href="/chat/${i._id}" class="active-chat-btn">${i.chatName}</a>
+                            </div>
+                        `)
+                    }else{
+                        $('.chats').append(`
+                            <div class="get-chat">
+                                <a href="/chat/${i._id}" class="chat-btn">${i.chatName}</a>
+                            </div>
+                        `)
+                    }
+                    
+                }
+            }
+
+            
         }
    })
 </script>

@@ -49,7 +49,7 @@ li{
 }
 .get-chat{
     display: flex;
-
+    margin-bottom: 15px;
     text-align: center;
 }
 

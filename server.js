@@ -31,16 +31,14 @@ io.use((socket, next) => {
     })
 })
 io.on('connection', socket => {
-    socket.on('user message', (text, createdAt) => {
-        io.emit('user message', text, createdAt)
+    socket.on('user message', (message) => {
+        io.emit('user message', message)
     })
 
-    socket.on('join room', room => {
+
+    socket.on('message room', (room, message, sender) => {
         socket.join(room)
-    })
-
-    socket.on('message room', (room, message, createdAt) => {
-        socket.to(room).emit('chat message', message, createdAt)
+        io.to(room).emit('chat message', message, sender)
     })
 })
 

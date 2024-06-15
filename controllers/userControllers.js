@@ -49,7 +49,7 @@ router.post('/registration', async (req, res) => {
         return res.json({ ok: true, token })
 
     } catch (e) {
-        console.log(e)
+        console.log(e.message)
         return res.json({ message: 'Something error...', color: '#ff6054' })
     }
 })
@@ -95,8 +95,13 @@ router.get('/acquaintances', verifyToken, async (req, res) => {
 
     let messagesDirtySet = new Set(messagesDirty)
 
-    let messagesArr = Array.from(messagesDirtySet)
+    let messagesArr = []
 
+    let mes = Array.from(messagesDirtySet)
+
+    for (i of mes) {
+        messagesArr.unshift(i)
+    }
     const messagesSet = new Set();
 
     for (let message of messagesArr) {
@@ -127,10 +132,53 @@ router.get('/chat/:userId', async (req, res) => {
     res.render('chat');
 })
 
-router.get('/chat-data/:userId', verifyToken, async (req, res) => {
+router.get('/user-data/:userId', verifyToken, async (req, res) => {
     const userId = req.params.userId;
     const cacheKey = `messeges_${userId}-${req.user}`;
     try {
+        const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 });
+
+        if (!recipient) {
+            if (cache.get(cacheKey)) {
+                const { chatRecipient, chatData, userNow } = cache.get(cacheKey)
+                console.log(chatData)
+                return res.json({
+                    chatRecipient,
+                    chatData,
+                    userNow
+                });
+            }
+
+            const chatRecipient = await Chats.findOne({ _id: userId })
+
+            const chatDataDirty = await Messages.find({
+                recipient: userId
+            }).lean().exec()
+
+            const chatData = await Promise.all(chatDataDirty.map(async (message) => {
+
+                const sender = await Users.findOne({ _id: message.sender }, { username: 1 });
+
+                return {
+                    ...message,
+                    sender
+                };
+            }));
+
+            cache.set(cacheKey, {
+                chatRecipient,
+                chatData,
+                userNow: req.user
+            })
+
+            return res.json({
+                chatRecipient,
+                chatData,
+                userNow: req.user
+            });
+        }
+
+
         if (cache.get(cacheKey)) {
             const { recipient, messages, userNow } = cache.get(cacheKey)
 
@@ -139,9 +187,8 @@ router.get('/chat-data/:userId', verifyToken, async (req, res) => {
                 messages,
                 userNow
             });
-        };
 
-        const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 });
+        };
 
         const messages = await Messages.find({
             $or: [
@@ -166,31 +213,53 @@ router.get('/chat-data/:userId', verifyToken, async (req, res) => {
     };
 })
 
+
 router.post('/send-message/:userId', verifyToken, async (req, res) => {
     const { message } = req.body;
     const userId = req.params.userId;
 
+    const cacheKey = `messeges_${userId}-${req.user}`;
+
     try {
         if (message.trim()) {
+            const recipientUser = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 })
+
+            if (!recipientUser) {
+                const chatRecipient = await Chats.findOne({ _id: userId }).lean()
+
+                const createdMessageHard = await Messages.create({
+                    recipient: userId,
+                    sender: req.user,
+                    text: message
+                })
+
+                const createdMessage = createdMessageHard.toObject();
+                const username = await Users.find({_id: createdMessageHard.sender}, {username: 1})
+                createdMessage.sender = username[0]
+
+                const chatCacheData = cache.get(cacheKey).chatData.concat([createdMessage])
+      
+                cache.set(cacheKey, { chatData: chatCacheData, chatRecipient, userNow: createdMessage.sender })
+
+                const sender = await Users.findOne({ _id: createdMessage.sender }).lean()
+
+                return res.json({ room: chatRecipient.uniqueChatName, createdMessage, sender, ok: true })
+
+            }
+
             const createdMessage = await Messages.create({
                 recipient: userId,
                 sender: req.user,
                 text: message
             });
 
-            const cacheKey = `messeges_${userId}-${req.user}`;
+            const cacheData = cache.get(cacheKey).messages.concat([createdMessage])
 
-            if (cache.get(cacheKey)) {
-                const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 })
+            cache.set(cacheKey, { messages: cacheData, recipient, userNow: createdMessage.sender })
 
-                const cacheData = cache.get(cacheKey).messages.concat([createdMessage])
-
-                cache.set(cacheKey, { messages: cacheData, recipient, userNow: req.user })
-            };
 
             return res.json({
-                createdAt: createdMessage.date_created,
-                message,
+                createdMessage,
                 ok: true
             });
         };
@@ -225,82 +294,87 @@ router.post('/confirm-unique-username', async (req, res) => {
 
 router.post('/search-users', verifyToken, async (req, res) => {
     const { query } = req.body;
+    try {
+        if (!query.trim()) {
+            const messagesDirty = await Messages.find().lean().exec();
 
-    if (!query.trim()) {
-        const messagesDirty = await Messages.find().lean().exec();
+            const messagesSet = new Set();
 
-        const messagesSet = new Set();
+            for (let message of messagesDirty) {
+                const senderId = new mongoose.Types.ObjectId(message.sender);
+                const recipientId = new mongoose.Types.ObjectId(message.recipient);
 
-        for (let message of messagesDirty) {
-            const senderId = new mongoose.Types.ObjectId(message.sender);
-            const recipientId = new mongoose.Types.ObjectId(message.recipient);
-
-            if (senderId.equals(new mongoose.Types.ObjectId(req.user))) {
-                messagesSet.add(recipientId);
+                if (senderId.equals(new mongoose.Types.ObjectId(req.user))) {
+                    messagesSet.add(recipientId);
+                };
+                if (recipientId.equals(new mongoose.Types.ObjectId(req.user))) {
+                    messagesSet.add(senderId);
+                };
             };
-            if (recipientId.equals(new mongoose.Types.ObjectId(req.user))) {
-                messagesSet.add(senderId);
-            };
-        };
 
-        const messages = Array.from(messagesSet);
+            const messages = Array.from(messagesSet);
+
+            const users = await Users.find({
+                $and: [
+                    { _id: { $ne: req.user } },
+                    { _id: { $in: messages } }
+                ]
+            }).lean().exec();
+
+            return res.json({ users });
+        }
 
         const users = await Users.find({
             $and: [
-                { _id: { $ne: req.user } },
-                { _id: { $in: messages } }
-            ]
-        }).lean().exec();
-
-        return res.json({ users });
-    }
-
-    const users = await Users.find({
-        $and: [
-            { uniqueUsername: new RegExp(`^${query}`) },
-            {
-                _id: {
-                    $ne: req.user
+                { uniqueUsername: new RegExp(`^${query}`) },
+                {
+                    _id: {
+                        $ne: req.user
+                    }
                 }
-            }
-        ]
-    }, { username: 1 }).lean().exec()
+            ]
+        }, { username: 1 }).lean().exec()
 
-    return res.json({ users })
+        return res.json({ users })
+    } catch (e) {
+        console.log(e.message)
+    }
 })
 
 //             CHAT      PART           CHAT           PART        //
 
+
 router.post('/create-chat', verifyToken, async (req, res) => {
     const { chatName, uniqueChatName, maxUsers } = req.body;
     let chat;
-    try{
-        if(maxUsers){
+    try {
+        if (maxUsers) {
             chat = await Chats.create({
                 chatName,
                 maxUsers,
                 uniqueChatName,
                 creator: req.user
             });
-        }else{
+        } else {
             chat = await Chats.create({
                 chatName,
-                uniqueChatName
+                uniqueChatName,
+                creator: req.user
             });
         };
-        
+
         chat.members.push(req.user)
         await chat.save()
-    
-        return res.json({uniqueChatName: chat.uniqueChatName, ok: true});
 
-    }catch(e){
-        return res.json({ok: false});
+        return res.json({ uniqueChatName: chat.uniqueChatName, ok: true });
+
+    } catch (e) {
+        return res.json({ ok: false });
     };
 });
 router.post('/confirm-unique-chatname', async (req, res) => {
     try {
-       
+
         const { uniqueChatName } = req.body;
 
         if (!uniqueChatName.trim()) {
@@ -322,6 +396,12 @@ router.post('/confirm-unique-chatname', async (req, res) => {
         return res.json({ message: e.message })
     };
 });
+
+router.get('/chats', verifyToken, async (req, res) => {
+    const chats = await Chats.find()
+
+    return res.json({ chats })
+})
 
 
 //        ROUTER END
