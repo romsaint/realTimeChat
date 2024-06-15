@@ -178,7 +178,6 @@
             if(res.messages){
                 if(res.messages.length > 0){
                     for(i of res.messages){
-                        console.log()
                         if(i.sender === res.userNow){
                             $('.chat').append(`
                             <div class="wrap__my-message">
@@ -254,11 +253,9 @@
             }
 
             //     CHAT   CHAT     CHAT       CHAT            CHAT                CHAT                    CHAT
-
-            if(res.chatData){
-              
+            else{
                 for(let i = 0; i < res.chatData.length; i++){
- 
+                    console.log(res.chatData[i])
                     if(res.chatData[i].sender._id === res.userNow._id || res.chatData[i].sender._id === res.userNow){
                         $('.chat').append(`
                         <div class="wrap__my-message">
@@ -282,11 +279,11 @@
                         `)
                     }
                 }
-
-
+    
+    
                 $('.user-info > *').remove()
                 $('.wrap__form-send-message > *').remove()
-
+    
                 $('.user-info').addClass('mb-2')
                 $('.chat-container').addClass('mb-4')
     
@@ -297,7 +294,7 @@
                         <p class="users-quantity ml-2">${res.chatRecipient.members.length} users</p>
                     </div>
                 `)
-
+    
                 $('.wrap__form-send-message').append(`
                     <form class="form-send-message flex items-center" method="post" action="/send-message/${res.chatRecipient._id}">
                         <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
@@ -308,7 +305,7 @@
                 $('.form-send-message').submit(e => {
                     e.preventDefault()
                     const form = $(e.currentTarget)
-
+    
                     $.ajax({
                         url: form.attr('action'),
                         method: "post",
@@ -319,13 +316,14 @@
                         success: res => {
                             if(res.ok){
                                 socket.emit('message room', res.room, res.createdMessage, res.sender)
-
+    
                                 $('.input-send').val('')
                             }
                         }
                     })
                 })
             }
+            
             //      END             END                  END
 
         }

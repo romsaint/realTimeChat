@@ -134,18 +134,18 @@ router.get('/chat/:userId', async (req, res) => {
 
 router.get('/user-data/:userId', verifyToken, async (req, res) => {
     const userId = req.params.userId;
-    const cacheKey = `messeges_${userId}-${req.user}`;
+    const cacheKey = `messeges_${userId}`;
     try {
         const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 });
 
         if (!recipient) {
             if (cache.get(cacheKey)) {
-                const { chatRecipient, chatData, userNow } = cache.get(cacheKey)
+                const { chatRecipient, chatData } = cache.get(cacheKey)
                 console.log(chatData)
                 return res.json({
                     chatRecipient,
                     chatData,
-                    userNow
+                    userNow: req.user
                 });
             }
 
@@ -218,7 +218,7 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
     const { message } = req.body;
     const userId = req.params.userId;
 
-    const cacheKey = `messeges_${userId}-${req.user}`;
+    const cacheKey = `messeges_${userId}`;
 
     try {
         if (message.trim()) {
@@ -239,9 +239,9 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
 
                 const chatCacheData = cache.get(cacheKey).chatData.concat([createdMessage])
       
-                cache.set(cacheKey, { chatData: chatCacheData, chatRecipient, userNow: createdMessage.sender })
+                cache.set(cacheKey, { chatData: chatCacheData, chatRecipient })
 
-                const sender = await Users.findOne({ _id: createdMessage.sender }).lean()
+                const sender = await Users.findOne({ _id: createdMessage.sender._id }).lean()
 
                 return res.json({ room: chatRecipient.uniqueChatName, createdMessage, sender, ok: true })
 
@@ -254,10 +254,11 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
             });
 
             const cacheData = cache.get(cacheKey).messages.concat([createdMessage])
+            const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 });
 
             cache.set(cacheKey, { messages: cacheData, recipient, userNow: createdMessage.sender })
 
-
+            
             return res.json({
                 createdMessage,
                 ok: true
