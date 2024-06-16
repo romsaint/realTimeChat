@@ -444,5 +444,22 @@ router.get('/join-chat/:chatId', verifyToken, async (req, res) => {
         return res.json({message: 'Chat is full.'})
     }
 })
+
+//     LEAVE     LEAVE
+router.get('/leave/:chatId', verifyToken, async (req, res) => {
+    const chat = await Chats.findOne({_id: req.params.chatId})
+
+    if (!chat) return res.json({message: 'Chat not found.'})
+
+    const index = chat.members.findIndex((v, i) => {
+        return v === req.user
+    })
+
+    chat.members.splice(index, 1)
+    await chat.save()
+
+    return res.json({ok: true})
+})
+
 //        ROUTER END
 module.exports = router;
