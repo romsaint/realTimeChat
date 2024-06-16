@@ -141,7 +141,7 @@ router.get('/user-data/:userId', verifyToken, async (req, res) => {
         if (!recipient) {
             if (cache.get(cacheKey)) {
                 const { chatRecipient, chatData } = cache.get(cacheKey)
-                console.log(chatData)
+
                 return res.json({
                     chatRecipient,
                     chatData,
@@ -225,7 +225,11 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
             const recipientUser = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 })
 
             if (!recipientUser) {
-                const chatRecipient = await Chats.findOne({ _id: userId }).lean()
+                const chatRecipient = await Chats.findOne({ _id: userId })
+
+                if(!chatRecipient.members.includes(req.user)){
+                    return res.json({ ok: false });
+                }
 
                 const createdMessageHard = await Messages.create({
                     recipient: userId,
@@ -234,11 +238,11 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
                 })
 
                 const createdMessage = createdMessageHard.toObject();
-                const username = await Users.find({_id: createdMessageHard.sender}, {username: 1})
+                const username = await Users.find({ _id: createdMessageHard.sender }, { username: 1 })
                 createdMessage.sender = username[0]
 
                 const chatCacheData = cache.get(cacheKey).chatData.concat([createdMessage])
-      
+
                 cache.set(cacheKey, { chatData: chatCacheData, chatRecipient })
 
                 const sender = await Users.findOne({ _id: createdMessage.sender._id }).lean()
@@ -258,7 +262,7 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
 
             cache.set(cacheKey, { messages: cacheData, recipient, userNow: createdMessage.sender })
 
-            
+
             return res.json({
                 createdMessage,
                 ok: true
@@ -399,11 +403,46 @@ router.post('/confirm-unique-chatname', async (req, res) => {
 });
 
 router.get('/chats', verifyToken, async (req, res) => {
-    const chats = await Chats.find()
+    const chats = await Chats.find({
+
+    })
 
     return res.json({ chats })
 })
 
 
+router.get('/is-user-join-chat/:chatId', verifyToken, async (req, res) => {
+    const chatName = req.params.chatId
+
+    try {
+        const chat = await Chats.findOne({ _id: chatName });
+
+        if (!chat) return res.json({message: 'Chat not found.'})
+
+        const isMember = chat.members.includes(req.user);
+       
+        if (!isMember) {
+            return res.json({ok: -2})
+        }
+        
+        return res.json({ok: 52})
+    } catch (error) {
+        console.log(error.message)
+    }
+});
+router.get('/join-chat/:chatId', verifyToken, async (req, res) => {
+    const chat = await Chats.findOne({_id: req.params.chatId})
+
+    if (!chat) return res.json({message: 'Chat not found.'})
+
+    if (chat.members.length < chat.maxUsers || !chat.maxUsers) {
+        chat.members.push(req.user);
+        await chat.save();
+
+        return res.json({ok: 1, uniqueChatName: chat.uniqueChatName})
+    } else {
+        return res.json({message: 'Chat is full.'})
+    }
+})
 //        ROUTER END
 module.exports = router;

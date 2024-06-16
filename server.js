@@ -35,10 +35,13 @@ io.on('connection', socket => {
         io.emit('user message', message)
     })
 
+    socket.on('join room', room => {
+        socket.join(room)
+
+    })
 
     socket.on('message room', (room, message, sender) => {
-        socket.join(room)
-        io.to(room).emit('chat message', message, sender)
+        io.emit('chat message', message, sender)
     })
 })
 

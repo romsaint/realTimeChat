@@ -40,6 +40,9 @@
             <ul class="users space-y-2 mt-3">
                 
             </ul>
+            <ul class="chats mt-3">
+
+            </ul>
         </div>
         <!-- Основной контент чата -->
         <div class="w-3/4 inner-main">
@@ -255,5 +258,34 @@
             })
         }
    })
+   $.ajax({
+    url: "/chats",
+    method: "get",
+    headers: {
+        'Authorization': `Bearer ${localStorage.token}`
+    },
+    success: res => {
+        if(res.chats.length > 0){
+            for(i of res.chats){
+                if(i._id === url){
+                    $('.chats').append(`
+                        <div class="get-chat">
+                            <a href="/chat/${i._id}" class="active-chat-btn">${i.chatName}</a>
+                        </div>
+                    `)
+                }else{
+                    $('.chats').append(`
+                        <div class="get-chat">
+                            <a href="/chat/${i._id}" class="chat-btn">${i.chatName}</a>
+                        </div>
+                    `)
+                }
+                
+            }
+        }
+
+        
+    }
+})
 </script>
 </html>

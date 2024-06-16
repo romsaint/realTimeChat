@@ -221,3 +221,11 @@ li{
 .message-text-name{
     font-size: 10px;
 }
+.alert-main{
+    width: 500px;
+}
+.btn-join{
+    width: 100%;
+    background: #bde8da;
+    padding: 10px
+}

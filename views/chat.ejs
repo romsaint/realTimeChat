@@ -25,6 +25,9 @@
 
 </script>
 <body class="bg-blue-50 flex flex-col items-center justify-center min-h-screen">
+    <div class="wrap__alert">
+
+    </div>
     <div class="main bg-white p-8 rounded w-full flex">
         <div class="left-side mini-shadow w-1/4 bg-gray-100 p-4 rounded mr-4">
             <div class="menu-search mt-4 flex">
@@ -198,13 +201,16 @@
                             `)
                         }
                     }
+                    
+                    
+
                 }
                 $('.user-info > *').remove()
                 $('.wrap__form-send-message > *').remove()
     
                 //         OTHER  
                 $('.user-info').addClass('mb-2')
-                $('.chat-container').addClass('mb-4')
+                $('.chat-container').addClass('mb-2')
     
     
                 $('.user-info').append(`
@@ -255,7 +261,6 @@
             //     CHAT   CHAT     CHAT       CHAT            CHAT                CHAT                    CHAT
             else{
                 for(let i = 0; i < res.chatData.length; i++){
-                    console.log(res.chatData[i])
                     if(res.chatData[i].sender._id === res.userNow._id || res.chatData[i].sender._id === res.userNow){
                         $('.chat').append(`
                         <div class="wrap__my-message">
@@ -285,7 +290,7 @@
                 $('.wrap__form-send-message > *').remove()
     
                 $('.user-info').addClass('mb-2')
-                $('.chat-container').addClass('mb-4')
+                $('.chat-container').addClass('mb-2')
     
                 $('.user-info').append(`
                     <h1 class="text-2xl">${res.chatRecipient.chatName}</h1>
@@ -294,36 +299,136 @@
                         <p class="users-quantity ml-2">${res.chatRecipient.members.length} users</p>
                     </div>
                 `)
-    
-                $('.wrap__form-send-message').append(`
-                    <form class="form-send-message flex items-center" method="post" action="/send-message/${res.chatRecipient._id}">
-                        <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
-                        <button type="submit" class="button-send-message mini-shadow text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
-                    </form>
-                `)
-                    
-                $('.form-send-message').submit(e => {
-                    e.preventDefault()
-                    const form = $(e.currentTarget)
-    
-                    $.ajax({
-                        url: form.attr('action'),
-                        method: "post",
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.token}`
-                        },
-                        data: form.serialize(),
-                        success: res => {
-                            if(res.ok){
-                                socket.emit('message room', res.room, res.createdMessage, res.sender)
-    
-                                $('.input-send').val('')
-                            }
+            
+            
+                $.ajax({
+                    url: `/is-user-join-chat/${url}`,
+                    method: 'get',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.token}`
+                    },
+                    success: res => {
+                        if(res.ok === -2){
+                            $('.wrap__form-send-message > *').remove()
+                            $('.wrap__form-send-message').append(`
+                                <div class="wrap-join-button">
+                                    <button class="btn-join rounded">Join to chat</button>
+                                </div>
+                            `)
+                            $('.btn-join').click(e => {
+                                e.preventDefault()
+                                $.ajax({
+                                    url: `/join-chat/${url}`,
+                                    method: 'get',
+                                    headers: {
+                                        'Authorization': `Bearer ${localStorage.token}`
+                                    },
+                                    success: res => {
+                                        if(res.message){
+                                            $('.wrap__alert').append(`
+                                                <div class="alert-main bg-red-100 mb-4 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                                                    <strong class="font-bold">Error:</strong>
+                                                    <span class="block sm:inline">${res.message}</span>
+                                                    <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                                                        <svg class="svg-close fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                                                    </span>
+                                                </div>
+                                            `)
+                                            $('.svg-close').click(e => {
+                                                e.preventDefault()
+                                                $('.wrap__alert').remove()
+                                            })
+                                        }else{
+                                            socket.emit('join room', res.uniqueChatName)
+                                            
+                                            $('.wrap__form-send-message > *').remove()
+                                            $('.wrap__form-send-message').append(`
+                                                <form class="form-send-message flex items-center" method="post" action="/send-message/${url}">
+                                                    <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
+                                                    <button type="submit" class="button-send-message mini-shadow text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
+                                                </form>
+                                            `)
+                                            $('.form-send-message').submit(e => {
+                                                e.preventDefault()
+                                                const form = $(e.currentTarget)
+                                
+                                                $.ajax({
+                                                    url: form.attr('action'),
+                                                    method: "post",
+                                                    headers: {
+                                                        'Authorization': `Bearer ${localStorage.token}`
+                                                    },
+                                                    data: form.serialize(),
+                                                    success: res => {
+                                                        if(res.ok){
+                                                            socket.emit('message room', res.room, res.createdMessage, res.sender)
+                                
+                                                            $('.input-send').val('')
+                                                        }
+                                                    }
+                                                })
+                                            })
+                                        }
+                                    }
+                                })
+                            })
                         }
-                    })
+
+                        else if(res.message){
+                            $('.wrap__alert').append(`
+                                <div class="alert-main bg-red-100 mb-4 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                                    <strong class="font-bold">Error:</strong>
+                                    <span class="block sm:inline">${res.message}</span>
+                                    <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                                        <svg class="svg-close fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                                    </span>
+                                </div>
+                            `)
+                            $('.svg-close').click(e => {
+                                e.preventDefault()
+                                $('.wrap__alert').remove()
+                            })
+                        }
+
+                        else{
+                            $('.wrap__form-send-message > *').remove()
+                            $('.wrap__form-send-message').append(`
+                                <form class="form-send-message flex items-center" method="post" action="/send-message/${url}">
+                                    <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
+                                    <button type="submit" class="button-send-message mini-shadow text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
+                                </form>
+                            `)
+                            $('.form-send-message').submit(e => {
+                            e.preventDefault()
+                            const form = $(e.currentTarget)
+            
+                            $.ajax({
+                                url: form.attr('action'),
+                                method: "post",
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.token}`
+                                },
+                                data: form.serialize(),
+                                success: res => {
+                                    if(res.ok){
+                                        socket.emit('message room', res.room, res.createdMessage, res.sender)
+            
+                                        $('.input-send').val('')
+                                    }
+                                }
+                            })
+                        })
+                        }
+                    }
                 })
             }
-            
+
+            let chatH = 0
+            const myMesagesH = $('.chat > *')
+            for(i of myMesagesH){
+                chatH += $(i).height()
+            }
+            $('.inner-chat-container').scrollTop(chatH)
             //      END             END                  END
 
         }
@@ -438,6 +543,7 @@
                             },
                             success: res => {
                                 if(res.ok){
+                                    socket.emit('join room', uniqueChatName)
                                     window.location.href = '/'
                                 }else{
                                     $('.wrap__alert-chat-create').append(`
@@ -449,6 +555,10 @@
                                             </span>
                                         </div>
                                     `)
+                                    $('.svg-close').click(e => {
+                                        e.preventDefault()
+                                        $('.wrap__alert-chat-create > *').remove()
+                                    })
                                 }
                             }
                         })
