@@ -78,6 +78,12 @@ li{
 .inner-chat-container{
     background-color: #e2ecf4;
 }
+
+.svg-close-create-chat{
+    right: 2%;
+    top: 20%;
+}
+
 .user-message{
     font-size: 14px;
     padding: 10px;

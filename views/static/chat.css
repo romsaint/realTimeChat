@@ -6,16 +6,13 @@
 li{
     list-style: none;
 }
-body{
 
-    background: rgb(6 18 49 / 29%);
-    border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(11.1px);
-    -webkit-backdrop-filter: blur(8.1px);
-}
 .mini-shadow{
-    box-shadow: 2px 2px 1px rgba(0, 0, 0, 0.04);
+    box-shadow: 2px 2px 1px rgba(65, 48, 48, 0.04);
+}
+.svg-close-create-chat{
+    right: 2%;
+    top: 20%;
 }
 
 .button-send-message{
