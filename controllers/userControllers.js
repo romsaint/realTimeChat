@@ -9,6 +9,7 @@ const NodeCache = require('node-cache')
 const Users = require('../schemas/userSchema')
 const Messages = require('../schemas/messageSchema')
 const Chats = require('../schemas/chatsSchema')
+const SiteSettings = require('../schemas/siteSettings')
 
 const verifyToken = require('../utils/verify')
 const { ObjectId } = require('mongoose').Types
@@ -474,4 +475,61 @@ router.get('/leave/:chatId', verifyToken, async (req, res) => {
 })
 
 //        ROUTER END
+// SITE SETTINGS
+router.get('/darkmodeCheck', verifyToken, async (req, res) => {
+    const dark = await SiteSettings.findOne({
+        user: req.user
+    })
+    if(dark){
+        return res.json({mode: dark.darkMode})
+    }
+    return res.json({ok: false})
+})
+router.get('/darkmodeOn', verifyToken, async (req, res) => {
+    try{
+        const ixExists = await SiteSettings.findOne({
+            user: req.user
+        })
+
+        if(ixExists){
+            await SiteSettings.updateOne({
+                darkMode: true
+            })
+        }else{
+            await SiteSettings.create({
+                darkMode: true,
+                user: req.user
+            })
+        }
+        
+        return res.json({ok: true})
+    }catch(e){
+        console.log(e)
+        return res.json({ok: false})
+    }
+})
+router.get('/darkmodeOff', verifyToken, async (req, res) => {
+    try{
+   
+        const ixExists = await SiteSettings.findOne({
+            user: req.user
+        })
+
+        if(ixExists){
+            await SiteSettings.updateOne({
+                darkMode: false
+            })
+        }else{
+            await SiteSettings.create({
+                darkMode: true,
+                user: req.user
+            })
+        }
+        
+        return res.json({ok: true})
+    }catch(e){
+        console.log(e)
+        return res.json({ok: false})
+    }
+})
 module.exports = router;

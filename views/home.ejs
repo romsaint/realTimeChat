@@ -107,13 +107,13 @@
                         for(i of res.users){
                             if(i._id === url){
                                 $('.users').append(`
-                                <div class="get-chat">
+                                <div class="get-user">
                                     <a href="/chat/${i._id}" class="user-btn active-user">${i.username}</a>
                                 </div>
                             `)
                             }else{
                                 $('.users').append(`
-                                    <div class="get-chat">
+                                    <div class="get-user">
                                         <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
                                     </div>
                                 `)
@@ -144,7 +144,7 @@
             if(res.users){
                 for(i of res.users){
                     $('.users').append(`
-                        <div class="get-chat">
+                        <div class="get-user">
                             <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
                         </div>
                     `)

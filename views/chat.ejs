@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="../static/chat.css">
+    <link rel="stylesheet" id="theme-link" href="../static/chatLightMode.css">
 </head>
 
 
@@ -24,12 +24,12 @@
     });
 
 </script>
-<body class="bg-blue-50 flex flex-col items-center justify-center min-h-screen">
+<body class="flex flex-col items-center justify-center min-h-screen">
     <div class="wrap__alert">
 
     </div>
-    <div class="main bg-white p-8 rounded w-full flex">
-        <div class="left-side mini-shadow w-1/4 bg-gray-100 p-4 rounded mr-4">
+    <div class="main p-8 rounded w-full flex">
+        <div class="left-side mini-shadow w-1/4 p-4 rounded mr-4">
             <div class="menu-search mt-4 flex">
                 <a href="#" class="a__svg-menu">
                     <svg viewBox="0 0 24 24" class="svg-menu" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 6H20M4 12H20M4 18H20" stroke="#3fa695" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
@@ -46,13 +46,16 @@
 
             </ul>
         </div>
+        <div class="container-svg-load">
+
+        </div>
         <!-- Основной контент чата -->
         <div class="w-3/4 inner-main">
-            <div class="user-info mini-shadow flex justify-between items-center mb-2 rounded bg-gray-100 p-1">
+            <div class="user-info mini-shadow flex justify-between items-center mb-2 rounded p-1">
                 
             </div>
             <div class="chat-container">
-                <div class="inner-chat-container mini-shadow overflow-y-auto p-4 border rounded">
+                <div class="inner-chat-container mini-shadow overflow-y-auto p-4 rounded">
           
                     <div class="mb-4 chat">
                         
@@ -78,22 +81,86 @@
                 <div class="links">
                     <a href="/create-chat" class="menu-link create-chat-link">Create chat</a>
                 </div>
+                <form method="get" action="/darkmode" class="toggle-container">
+                    <p class="dark-mode-text">Dark mode</p>
+                    <input type="checkbox" name="darkmode" id="dark-mode-toggle">
+                    <label for="dark-mode-toggle"></label>
+                </form>
             </div>
         </div>
     </div>
 </body>
 
+<div id="loading-overlay" class="hidden">
+    <div class="spinner"></div>
+</div>
 
 <script>
-    if(!localStorage.token){
-        window.location.href = '/registration'
+    const loadingOverlay = document.getElementById('loading-overlay');
+    function darkOff(){
+        $.ajax({
+            url: "/darkmodeOff",
+            method: 'get',
+            headers: {
+                'Authorization': `Bearer ${localStorage.token}`
+            },
+            success: res => {
+                if(res.ok){
+                    themeLink.href = '../static/chatLightMode.css';
+                }
+            }
+        })
     }
+    function darkOn(){
+        $.ajax({
+            url: "/darkmodeOn",
+            method: 'get',
+            headers: {
+                'Authorization': `Bearer ${localStorage.token}`
+            },
+            success: res => {
+                if(res.ok){
+                    themeLink.href = '../static/chatDarkMode.css';
+                   
+                }
+            }
+        })
+    }
+
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const themeLink = document.getElementById('theme-link');
+
+    $.ajax({
+        url: '/darkmodeCheck',
+        method: 'get',
+        headers: {
+            'Authorization': `Bearer ${localStorage.token}`
+        },
+        success: res => {
+            
+            if(res.mode){
+                darkOn()
+                darkModeToggle.checked = true
+            }else{
+                darkOff()
+            }
+        }
+    })
+
+    
+    darkModeToggle.addEventListener('change', function() {
+        if (darkModeToggle.checked) {
+            darkOn()
+        } else {
+            darkOff()
+        }
+    });
 
     socket.on('user message', (message) => {
         $('.chat').append(`
             <div class="wrap__my-message">
                 <div class="my-message mb-2">
-                    <p class="text-gray-700 message-text">${message.text}</p>
+                    <p class="message-text">${message.text}</p>
                     <li class="date-message">${new Date(message.date_created).toLocaleTimeString().slice(0, 5)}</li>
                 </div>
             </div>
@@ -111,7 +178,7 @@
             <div class="wrap__my-message">
                 <div class="my-message mb-2">
                     <div class="name-container">
-                        <p class="text-gray-700 message-text">${message.text}</p>
+                        <p class="message-text">${message.text}</p>
                     </div>
                     <li class="date-message">${new Date(message.date_created).toLocaleTimeString().slice(0, 5)}</li>
                 </div>
@@ -147,10 +214,11 @@
                         for(i of res.users){
                             if(i._id === url){
                                 $('.users').append(`
-                                <div class="get-user">
-                                    <a href="/chat/${i._id}" class="user-btn active-user">${i.username}</a>
-                                </div>
-                            `)
+                                    <div class="get-user get-user-${url}">
+                                        <a href="/chat/${i._id}" class="active-user user-btn">${i.username}</a>
+                                    </div>
+                                `)
+                                $(`.get-user-${url}`).css({'border': 'none'})
                             }else{
                                 $('.users').append(`
                                     <div class="get-user">
@@ -206,7 +274,7 @@
                             $('.chat').append(`
                             <div class="wrap__my-message">
                                 <div class="my-message mb-2">
-                                    <p class="text-gray-700 message-text">${i.text}</p>
+                                    <p class="message-text">${i.text}</p>
                                     <li class="date-message">${new Date(i.date_created).toLocaleTimeString().slice(0, 5)}</li>
                                 </div>
                             </div>
@@ -215,7 +283,7 @@
                             $('.chat').append(`
                                 <div class="wrap__user-message">
                                     <div class="user-message mb-2">
-                                        <p class="text-gray-700 message-text">${i.text}</p>
+                                        <p class="message-text">${i.text}</p>
                                         <li class="date-message">${new Date(i.date_created).toLocaleTimeString().slice(0, 5)}</li>
                                     </div>
                                 </div>
@@ -235,15 +303,15 @@
     
     
                 $('.user-info').append(`
-                    <h1 class="text-2xl">${res.recipient.username}</h1>
-                    <div class="flex items-center">
-                        <p>@${res.recipient.uniqueUsername}</p>
+                    <h1 class="text-2xl h1-user-info">${res.recipient.username}</h1>
+                    <div class="flex items-center user-info-leave-uniquename">
+                        <p class="recipient-unique-username">@${res.recipient.uniqueUsername}</p>
                     </div>
                 `)
     
                 $('.wrap__form-send-message').append(`
                     <form class="form-send-message flex items-center" method="post" action="/send-message/${res.recipient._id}">
-                        <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4 text-gray-700 mr-4 leading-tight focus:outline-none" placeholder="Message...">
+                        <input type="text" name="message" class="input-send mini-shadow appearance-none border rounded w-full px-4  mr-4 leading-tight focus:outline-none" placeholder="Message...">
                         <button type="submit" class="button-send-message mini-shadow text-white font-bold px-4 rounded focus:outline-none w-1/4">Send</button>
                     </form>
                 `)
@@ -286,7 +354,7 @@
                         $('.chat').append(`
                         <div class="wrap__my-message">
                             <div class="my-message mb-2">
-                                <p class="text-gray-700 message-text">${res.chatData[i].text}</p>
+                                <p class="message-text">${res.chatData[i].text}</p>
                                 <li class="date-message">${new Date(res.chatData[i].date_created).toLocaleTimeString().slice(0, 5)}</li>
                             </div>
                         </div>
@@ -296,8 +364,8 @@
                             <div class="wrap__user-message">
                                 <div class="user-message mb-2">
                                     <div class="name-container">
-                                        <p class="text-gray-500 message-text-name">${res.chatData[i].sender.username}</p>
-                                        <p class="text-gray-700 message-text">${res.chatData[i].text}</p>
+                                        <p class="message-text-name">${res.chatData[i].sender.username}</p>
+                                        <p class="message-text">${res.chatData[i].text}</p>
                                     </div>
                                     <li class="date-message">${new Date(res.chatData[i].date_created).toLocaleTimeString().slice(0, 5)}</li>
                                 </div>
@@ -314,9 +382,9 @@
                 $('.chat-container').addClass('mb-2')
     
                 $('.user-info').append(`
-                    <h1 class="text-2xl">${res.chatRecipient.chatName}</h1>
-                    <div class="flex items-center">
-                        <p>@${res.chatRecipient.uniqueChatName}</p>
+                    <h1 class="text-2xl h1-user-info">${res.chatRecipient.chatName}</h1>
+                    <div class="flex items-center user-info-leave-uniquename">
+                        <p class="recipient-unique-username">@${res.chatRecipient.uniqueChatName}</p>
                         
                     </div>
                 `)
@@ -414,9 +482,9 @@
                         }
 
                         else{
-                            $('.user-info').append(`
-                            <button class="btn-leave rounded">Leave</button>
-                        `)
+                            $('.user-info-leave-uniquename').append(`
+                                <button class="btn-leave rounded">Leave</button>
+                            `)
                         $('.btn-leave').click(e => {
                             $.ajax({
                                 url: `/leave/${url}`,
@@ -497,10 +565,11 @@
                 for(i of res.users){
                     if(i._id === url){
                         $('.users').append(`
-                        <div class="get-user">
-                            <a href="/chat/${i._id}" class="user-btn active-user">${i.username}</a>
-                        </div>
-                    `)
+                            <div class="get-user get-user-${url}">
+                                <a href="/chat/${i._id}" class="active-user user-btn">${i.username}</a>
+                            </div>
+                        `)
+                        $(`.get-user-${url}`).css({'border': 'none'})
                     }else{
                         $('.users').append(`
                             <div class="get-user">
@@ -525,7 +594,7 @@
   
                     $('.inner-main > *').remove()
                     $('.inner-main').append(`
-                        <div class="bg-green-50 p-8 rounded shadow w-full h-full flex flex-col">
+                        <div class="create-chat-container p-8 rounded shadow w-full h-full flex flex-col">
                             <span class="absolute svg-close-create-chat">
                                 <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
                             </span>
@@ -535,19 +604,19 @@
                             </div>
                             <form action="/create-chat" method="post" class="form-create-chat flex flex-col h-full">
                                 <div class="mb-4">
-                                    <label for="chatName" class="block text-gray-700 text-sm font-bold mb-2">Chat name</label>
-                                    <input type="chatName" name="chatName" id="chatName" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                    <label for="chatName" class="lable-create-chat block text-sm font-bold mb-2">Chat name</label>
+                                    <input type="chatName" name="chatName" id="chatName" class="input-create-chat appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline" required>
                                 </div>
                                 <div class="mb-4 uniqueChatName-container">
-                                    <label for="uniqueChatName" class="block text-gray-700 text-sm font-bold mb-2">Unique chat name</label>
-                                    <input type="text" name="uniqueChatName" id="uniqueChatName" class="uniqueChatName appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                    <label for="uniqueChatName" class="lable-create-chat block text-sm font-bold mb-2">Unique chat name</label>
+                                    <input type="text" name="uniqueChatName" id="uniqueChatName" class="input-create-chat uniqueChatName appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline" required>
                                 </div>
                                 <div class="mb-4 max-users-container">
-                                    <label for="max-users" class="block text-gray-700 text-sm font-bold mb-2">Max users in chat</label>
-                                    <input type="number" name="maxUsers" id="max-users" class="max-users appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                    <label for="max-users" class="lable-create-chat block text-sm font-bold mb-2">Max users in chat</label>
+                                    <input type="number" name="maxUsers" id="max-users" class="input-create-chat max-users appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline">
                                 </div>
                                 <div class="flex items-center justify-between mt-auto">
-                                    <button type="submit" class="button-submit-create-chat bg-blue-500 w-full hover:bg-blue-400 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline">Create</button>
+                                    <button type="submit" class="button-submit-create-chat w-full text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline">Create</button>
                                 </div>
                             </form>
                         </div>
