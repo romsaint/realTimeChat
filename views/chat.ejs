@@ -96,7 +96,6 @@
 </div>
 
 <script>
-    const loadingOverlay = document.getElementById('loading-overlay');
     function darkOff(){
         $.ajax({
             url: "/darkmodeOff",
@@ -106,7 +105,7 @@
             },
             success: res => {
                 if(res.ok){
-                    themeLink.href = '../static/chatLightMode.css';
+                    themeLink.href = '../static/chatDarkMode.css';
                 }
             }
         })
@@ -120,8 +119,7 @@
             },
             success: res => {
                 if(res.ok){
-                    themeLink.href = '../static/chatDarkMode.css';
-                   
+                    themeLink.href = '../static/chatLightMode.css';
                 }
             }
         })
@@ -137,12 +135,11 @@
             'Authorization': `Bearer ${localStorage.token}`
         },
         success: res => {
-            
-            if(res.mode){
-                darkOn()
+            if(res.mode === true){
                 darkModeToggle.checked = true
-            }else{
                 darkOff()
+            }else{
+                darkOn()
             }
         }
     })
@@ -150,9 +147,9 @@
     
     darkModeToggle.addEventListener('change', function() {
         if (darkModeToggle.checked) {
-            darkOn()
-        } else {
             darkOff()
+        } else {
+            darkOn()
         }
     });
 

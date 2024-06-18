@@ -14,6 +14,10 @@ const schema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    avatar: {
+        type: String,
+        required: false
+    },
     date_created: {
         type: Date,
         default: () => Date.now()

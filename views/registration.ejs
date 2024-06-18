@@ -6,6 +6,7 @@
     <title>Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="./static/reg.css">
 </head>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -18,11 +19,6 @@
 
 </script>
 
-<style>
-    .mini-shadow{
-        box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.04);
-    }
-</style>
 
 <body class="bg-blue-100 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded shadow-lg max-w-sm w-full">
@@ -32,7 +28,7 @@
             </svg>
         </div>
         <h1 class="text-center text-2xl font-bold mb-6">Registration</h1>
-        <form action="/registration" method="post" class="form-reg">
+        <form action="/registration" method="post" class="form-reg" enctype="multipart/form-data">
             <div class="mb-4">
                 <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
                 <input type="text" name="username" id="username" class="mini-shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
@@ -45,6 +41,13 @@
                 <label for="uniqueUsername" class="block text-gray-700 text-sm font-bold mb-2">Unique name</label>
                 <input type="text" name="uniqueUsername" id="uniqueUsername" class="uniqueUsername mini-shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
             </div>
+            <div class="mb-4 avatar-container">
+                <label for="avatar" class="block text-gray-700 text-sm font-bold mb-2">Avatar</label>
+                <label class="input-file w-full">
+                        <input type="file" name="avatar">		
+                        <span class="w-full">Choose file</span>
+                </label>
+            </div>
             <div class="flex items-center justify-between">
                 <button type="submit" class="button-submit bg-orange-500 w-full hover:bg-orange-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Register</button>
             </div>
@@ -52,11 +55,16 @@
     </div>
 
     <script>
+        $('.input-file input[type=file]').on('change', function(){
+            let file = this.files[0];
+            $(this).next().html(file.name);
+        });
+        
         $('.uniqueUsername').keydown(e => {
             setTimeout(() => {
                 const form = $(e.currentTarget)
 
-                const data = form.serialize() 
+                const data = form.serializeArray() 
                 $.ajax({
                     url: '/confirm-unique-username',
                     method: 'post',

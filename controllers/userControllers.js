@@ -5,6 +5,8 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const NodeCache = require('node-cache')
+const Multer = require('multer')
+const path = require('path')
 
 const Users = require('../schemas/userSchema')
 const Messages = require('../schemas/messageSchema')
@@ -14,6 +16,16 @@ const SiteSettings = require('../schemas/siteSettings')
 const verifyToken = require('../utils/verify')
 const { ObjectId } = require('mongoose').Types
 
+const storage = Multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'userAvatars/')
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname)
+    }
+})
+
+const multer = Multer({ storage, dest: 'userAvatar/' })
 
 mongoose.connect('mongodb://localhost/socketdb')
 
@@ -25,8 +37,11 @@ router.get('/registration', async (req, res) => {
     res.render('registration')
 })
 
-router.post('/registration', async (req, res) => {
+router.post('/registration', multer.single('avatar'),  async (req, res) => {
     const { username, password, uniqueUsername } = req.body
+    console.log(req.file)
+    console.log(req.files)
+    const {avatar} = req.file
 
     try {
         const isUniqueNameExists = await Users.findOne({
@@ -39,11 +54,17 @@ router.post('/registration', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
+        if(avatar){
+            console.log(path.extname(avatar))
+            console.log(avatar)
+        }
+
         const user = await Users.create({
             username,
             password: hashedPassword,
             uniqueUsername
         })
+
         let id = user._id
         const token = await jwt.sign({ id }, process.env.SECRET_KEY_JWT)
 
@@ -480,56 +501,56 @@ router.get('/darkmodeCheck', verifyToken, async (req, res) => {
     const dark = await SiteSettings.findOne({
         user: req.user
     })
-    if(dark){
-        return res.json({mode: dark.darkMode})
+    if (dark) {
+        
+        return res.json({ mode: dark.darkMode })
     }
-    return res.json({ok: false})
+    return res.json({ ok: false })
 })
 router.get('/darkmodeOn', verifyToken, async (req, res) => {
-    try{
+    try {
         const ixExists = await SiteSettings.findOne({
             user: req.user
         })
 
-        if(ixExists){
+        if (ixExists) {
             await SiteSettings.updateOne({
                 darkMode: true
             })
-        }else{
+        } else {
             await SiteSettings.create({
                 darkMode: true,
                 user: req.user
             })
         }
-        
-        return res.json({ok: true})
-    }catch(e){
+
+        return res.json({ ok: true })
+    } catch (e) {
         console.log(e)
-        return res.json({ok: false})
+        return res.json({ ok: false })
     }
 })
 router.get('/darkmodeOff', verifyToken, async (req, res) => {
-    try{
-   
+    try {
         const ixExists = await SiteSettings.findOne({
             user: req.user
         })
 
-        if(ixExists){
+        if (ixExists) {
             await SiteSettings.updateOne({
                 darkMode: false
             })
-        }else{
+        } else {
             await SiteSettings.create({
-                darkMode: true,
+                darkMode: false,
                 user: req.user
             })
         }
-        
-        return res.json({ok: true})
-    }catch(e){
+        console.log('dark.darkMode')
+        return res.json({ ok: true })
+    } catch (e) {
         console.log(e)
-        return res.json({ok: false})
+        return res.json({ ok: false })
     }
 })
 module.exports = router;
