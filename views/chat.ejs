@@ -14,7 +14,6 @@
     <link rel="stylesheet" id="theme-link" href="../static/chatLightMode.css">
 </head>
 
-
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io({
@@ -41,9 +40,6 @@
 
             <ul class="users  mt-3">
                 
-            </ul>
-            <ul class="chats mt-3">
-
             </ul>
         </div>
         <div class="container-svg-load">
@@ -105,7 +101,7 @@
             },
             success: res => {
                 if(res.ok){
-                    themeLink.href = '../static/chatDarkMode.css';
+                    themeLink.href = '../static/chatLightMode.css';
                 }
             }
         })
@@ -119,7 +115,7 @@
             },
             success: res => {
                 if(res.ok){
-                    themeLink.href = '../static/chatLightMode.css';
+                    themeLink.href = '../static/chatDarkMode.css';
                 }
             }
         })
@@ -137,9 +133,9 @@
         success: res => {
             if(res.mode === true){
                 darkModeToggle.checked = true
-                darkOff()
-            }else{
                 darkOn()
+            }else{
+                darkOff()
             }
         }
     })
@@ -147,9 +143,10 @@
     
     darkModeToggle.addEventListener('change', function() {
         if (darkModeToggle.checked) {
-            darkOff()
-        } else {
+            console.log('CHECK')
             darkOn()
+        } else {
+            darkOff()
         }
     });
 
@@ -205,22 +202,35 @@
                 },
                 success: res => {
                     $('.users > *').remove()
-                    $('.chats > *').remove()
-            
+                    console.log(res)
                     if(res.users.length > 0){
                         for(i of res.users){
                             if(i._id === url){
                                 $('.users').append(`
-                                    <div class="get-user get-user-${url}">
-                                        <a href="/chat/${i._id}" class="active-user user-btn">${i.username}</a>
-                                    </div>
+                                    <a href="/chat/${i._id}" class=" user-btn">
+                                        <div class="get-user active-user get-user-${url}">
+                                            <div class="wrap__user-avatar">
+                                                <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                            </div>
+                                            <div class="username">
+                                                ${i.username}
+                                            </div>
+                                        </div> 
+                                    </a>
                                 `)
-                                $(`.get-user-${url}`).css({'border': 'none'})
+                               
                             }else{
                                 $('.users').append(`
-                                    <div class="get-user">
-                                        <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
-                                    </div>
+                                    <a href="/chat/${i._id}" class=" user-btn">
+                                        <div class="get-user get-user-${url}">
+                                            <div class="wrap__user-avatar">
+                                                <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                            </div>
+                                            <div class="username">
+                                                ${i.username}
+                                            </div>
+                                        </div> 
+                                    </a>
                                 `)
                             }
                         }
@@ -228,16 +238,30 @@
                        
                         for(i of res.chats){
                             if(i._id === url){
-                                $('.chats').append(`
-                                    <div class="get-chat">
-                                        <a href="/chat/${i._id}" class="active-chat-btn">${i.chatName}</a>
-                                    </div>
+                                $('.users').append(`
+                                    <a href="/chat/${i._id}" class=" user-btn">
+                                        <div class="get-user active-user get-user-${url}">
+                                            <div class="wrap__user-avatar">
+                                                <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
+                                            </div>
+                                            <div class="username">
+                                                ${i.chatName}
+                                            </div>
+                                        </div> 
+                                    </a>
                                 `)
                             }else{
-                                $('.chats').append(`
-                                    <div class="get-chat">
-                                        <a href="/chat/${i._id}" class="chat-btn">${i.chatName}</a>
-                                    </div>
+                                $('.users').append(`
+                                    <a href="/chat/${i._id}" class=" user-btn">
+                                        <div class="get-user get-user-${url}">
+                                            <div class="wrap__user-avatar">
+                                                <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
+                                            </div>
+                                            <div class="username">
+                                                ${i.chatName}
+                                            </div>
+                                        </div> 
+                                    </a>
                                 `)
                             }
                             
@@ -562,16 +586,30 @@
                 for(i of res.users){
                     if(i._id === url){
                         $('.users').append(`
-                            <div class="get-user get-user-${url}">
-                                <a href="/chat/${i._id}" class="active-user user-btn">${i.username}</a>
-                            </div>
+                            <a href="/chat/${i._id}" class=" user-btn">
+                                <div class="get-user active-user get-user-${url}">
+                                    <div class="wrap__user-avatar">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                    </div>
+                                    <div class="username">
+                                        ${i.username}
+                                    </div>
+                                </div> 
+                            </a>
                         `)
-                        $(`.get-user-${url}`).css({'border': 'none'})
+             
                     }else{
                         $('.users').append(`
-                            <div class="get-user">
-                                <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
-                            </div>
+                            <a href="/chat/${i._id}" class=" user-btn">
+                                <div class="get-user get-user-${url}">
+                                    <div class="wrap__user-avatar">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                    </div>
+                                    <div class="username">
+                                        ${i.username}
+                                    </div>
+                                </div> 
+                            </a>
                         `)
                     }
                 }
@@ -595,22 +633,29 @@
                             <span class="absolute svg-close-create-chat">
                                 <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
                             </span>
-                            <h1 class="text-center text-2xl font-bold mb-6">Create chat</h1>
+                            <h1 class="text-center text-2xl font-bold">Create chat</h1>
                             <div class="wrap__alert-chat-create">
                 
                             </div>
-                            <form action="/create-chat" method="post" class="form-create-chat flex flex-col h-full">
-                                <div class="mb-4">
+                            <form action="/create-chat" method="post" enctype="multipart/form-data" class="form-create-chat flex flex-col h-full">
+                                <div class="mb-3">
                                     <label for="chatName" class="lable-create-chat block text-sm font-bold mb-2">Chat name</label>
                                     <input type="chatName" name="chatName" id="chatName" class="input-create-chat appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline" required>
                                 </div>
-                                <div class="mb-4 uniqueChatName-container">
+                                <div class="mb-3 uniqueChatName-container">
                                     <label for="uniqueChatName" class="lable-create-chat block text-sm font-bold mb-2">Unique chat name</label>
                                     <input type="text" name="uniqueChatName" id="uniqueChatName" class="input-create-chat uniqueChatName appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline" required>
                                 </div>
-                                <div class="mb-4 max-users-container">
+                                <div class="mb-3 max-users-container">
                                     <label for="max-users" class="lable-create-chat block text-sm font-bold mb-2">Max users in chat</label>
                                     <input type="number" name="maxUsers" id="max-users" class="input-create-chat max-users appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div class="mb-3 avatar-container">
+                                    <label for="avatar" class="label-avatar block text-sm font-bold mb-2">Avatar</label>
+                                    <label class="input-file w-full">
+                                            <input type="file" name="chatAvatar">		
+                                            <span class="w-full">Choose file</span>
+                                    </label>
                                 </div>
                                 <div class="flex items-center justify-between mt-auto">
                                     <button type="submit" class="button-submit-create-chat w-full text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline">Create</button>
@@ -618,6 +663,11 @@
                             </form>
                         </div>
                     `)
+
+                    $('.input-file input[type=file]').on('change', function(){
+                        let file = this.files[0];
+                        $(this).next().html(file.name);
+                    });
 
                     $('.svg-close-create-chat').click(e => {
                         window.location.href = `/chat/${url}` 
@@ -657,12 +707,16 @@
 
                     $('.form-create-chat').submit(e => {
                         e.preventDefault()
-                        const form = $(e.currentTarget)
-
+                      
+                        var form = this;
+                        var formData = new FormData(form); // Создаем объект FormData
+                
                         $.ajax({
-                            url: '/create-chat',
-                            method: "post",
-                            data: form.serialize(),
+                            url: form.action, // URL, указанный в атрибуте action формы
+                            type: form.method, // Метод запроса, указанный в атрибуте method формы
+                            data: formData,
+                            contentType: false, // Не устанавливать заголовок Content-Type
+                            processData: false, // Не обрабатывать данные формы
                             headers: {
                                 'Authorization': `Bearer ${localStorage.token}`
                             },
@@ -688,6 +742,7 @@
                             }
                         })
                     })
+                    
                    })
             });
             drawer.mouseleave(() => {
@@ -707,16 +762,30 @@
             if(res.chats.length > 0){
                 for(i of res.chats){
                     if(i._id === url){
-                        $('.chats').append(`
-                            <div class="get-chat">
-                                <a href="/chat/${i._id}" class="active-chat-btn">${i.chatName}</a>
-                            </div>
+                        $('.users').append(`
+                            <a href="/chat/${i._id}" class=" user-btn">
+                                <div class="get-user active-user get-user-${url}">
+                                    <div class="wrap__user-avatar">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                    </div>
+                                    <div class="username">
+                                        ${i.chatName}
+                                    </div>
+                                </div> 
+                            </a>
                         `)
                     }else{
-                        $('.chats').append(`
-                            <div class="get-chat">
-                                <a href="/chat/${i._id}" class="chat-btn">${i.chatName}</a>
-                            </div>
+                        $('.users').append(`
+                            <a href="/chat/${i._id}" class=" user-btn">
+                                <div class="get-user get-user-${url}">
+                                    <div class="wrap__user-avatar">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                    </div>
+                                    <div class="username">
+                                        ${i.chatName}
+                                    </div>
+                                </div> 
+                            </a>
                         `)
                     }
                     

@@ -7,6 +7,9 @@ const jwt = require('jsonwebtoken')
 const NodeCache = require('node-cache')
 const Multer = require('multer')
 const path = require('path')
+const uuid = require('uuid')
+const sharp = require('sharp')
+const fs = require('fs')
 
 const Users = require('../schemas/userSchema')
 const Messages = require('../schemas/messageSchema')
@@ -14,18 +17,17 @@ const Chats = require('../schemas/chatsSchema')
 const SiteSettings = require('../schemas/siteSettings')
 
 const verifyToken = require('../utils/verify')
-const { ObjectId } = require('mongoose').Types
 
 const storage = Multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'userAvatars/')
+        cb(null, 'views/userAvatars/')
     },
     filename: (req, file, cb) => {
         cb(null, file.originalname)
     }
 })
 
-const multer = Multer({ storage, dest: 'userAvatar/' })
+const multer = Multer({ storage })
 
 mongoose.connect('mongodb://localhost/socketdb')
 
@@ -37,42 +39,67 @@ router.get('/registration', async (req, res) => {
     res.render('registration')
 })
 
-router.post('/registration', multer.single('avatar'),  async (req, res) => {
+router.post('/registration', multer.single('avatar'), async (req, res) => {
     const { username, password, uniqueUsername } = req.body
-    console.log(req.file)
-    console.log(req.files)
-    const {avatar} = req.file
+    const avatar = req.file
 
     try {
         const isUniqueNameExists = await Users.findOne({
             uniqueUsername: uniqueUsername
-        })
-
+        }) 
+    
         if (isUniqueNameExists) {
-            return res.json({ message: "A unique username exists", color: '#ff6054' })
+            return res.json({ message: "A unique username exists" })
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
+        let user;
+        
+        if (avatar) {
+            const ext = path.extname(avatar.originalname)
+            if (ext !== '.jpeg' && ext !== '.jpg' && ext !== '.png') {
+                fs.unlinkSync(avatar.path)
+                return res.json({ message: 'Incorrect file extension' })
+            }
 
-        if(avatar){
-            console.log(path.extname(avatar))
-            console.log(avatar)
+            const uniqueId = uuid.v4()
+
+            await sharp(avatar.path)
+                .resize(150, 150, { fit: 'inside' }) // Изменяем размер изображения
+                .jpeg()
+                .toFile('views/userAvatars/compressed_' + uniqueId + '_' + avatar.originalname); // Сохраняем сжатый файл
+
+            fs.unlinkSync(avatar.path)
+
+            req.file.path = '/userAvatars/compressed_' + uniqueId + '_' + avatar.originalname
+            req.file.filename = 'compressed_' + uniqueId + '_' + avatar.originalname
+
+            user = await Users.create({
+                username,
+                password: hashedPassword,
+                uniqueUsername,
+                avatar: avatar.path
+            })
+        }else{
+            user = await Users.create({
+                username,
+                password: hashedPassword,
+                uniqueUsername
+            })
         }
 
-        const user = await Users.create({
-            username,
-            password: hashedPassword,
-            uniqueUsername
-        })
-
+    
         let id = user._id
         const token = await jwt.sign({ id }, process.env.SECRET_KEY_JWT)
 
         return res.json({ ok: true, token })
 
     } catch (e) {
-        console.log(e.message)
-        return res.json({ message: 'Something error...', color: '#ff6054' })
+        console.log(e)
+        if(e.errno === -4048){
+            return res.json({ message: 'Error upload file' })
+        }
+        return res.json({ message: 'Something error...' })
     }
 })
 router.get('/login', async (req, res) => {
@@ -370,7 +397,7 @@ router.post('/search-users', verifyToken, async (req, res) => {
                     }
                 }
             ]
-        }, { username: 1 }).lean().exec()
+        }, ).lean().exec()
 
         return res.json({ users, chats })
     } catch (e) {
@@ -381,24 +408,47 @@ router.post('/search-users', verifyToken, async (req, res) => {
 //             CHAT      PART           CHAT           PART        //
 
 
-router.post('/create-chat', verifyToken, async (req, res) => {
+router.post('/create-chat', multer.single('chatAvatar'), verifyToken, async (req, res) => {
     const { chatName, uniqueChatName, maxUsers } = req.body;
+    const chatAvatar = req.file
     let chat;
+    console.log(chatAvatar)
     try {
-        if (maxUsers) {
+        if(chatAvatar){
+            const ext = path.extname(chatAvatar.originalname)
+            if (ext !== '.jpeg' && ext !== '.jpg' && ext !== '.png') {
+                fs.unlinkSync(chatAvatar.path)
+                return res.json({ message: 'Incorrect file extension' })
+            }
+
+            const uniqueId = uuid.v4()
+
+            await sharp()
+                .resize(150, 150)
+                .jpeg()
+                .toFile('views/userAvatars/compressed_' + uniqueId + '_' + chatAvatar.originalname); // Сохраняем сжатый файл
+            
+                fs.unlinkSync(chatAvatar.path)
+
+                req.file.path = '/userAvatars/compressed_' + uniqueId + '_' + chatAvatar.originalname
+                req.file.filename = 'compressed_' + uniqueId + '_' + chatAvatar.originalname
+
+                chat = await Chats.create({
+                    chatName,
+                    maxUsers,
+                    uniqueChatName,
+                    avatar: chatAvatar.path,
+                    creator: req.user
+                });
+        }else{
             chat = await Chats.create({
                 chatName,
+                uniqueChatName,
                 maxUsers,
-                uniqueChatName,
                 creator: req.user
             });
-        } else {
-            chat = await Chats.create({
-                chatName,
-                uniqueChatName,
-                creator: req.user
-            });
-        };
+        }
+    
 
         chat.members.push(req.user)
         await chat.save()
@@ -406,6 +456,7 @@ router.post('/create-chat', verifyToken, async (req, res) => {
         return res.json({ uniqueChatName: chat.uniqueChatName, ok: true });
 
     } catch (e) {
+        console.log(e)
         return res.json({ ok: false });
     };
 });
@@ -502,7 +553,6 @@ router.get('/darkmodeCheck', verifyToken, async (req, res) => {
         user: req.user
     })
     if (dark) {
-        
         return res.json({ mode: dark.darkMode })
     }
     return res.json({ ok: false })
@@ -546,7 +596,7 @@ router.get('/darkmodeOff', verifyToken, async (req, res) => {
                 user: req.user
             })
         }
-        console.log('dark.darkMode')
+
         return res.json({ ok: true })
     } catch (e) {
         console.log(e)

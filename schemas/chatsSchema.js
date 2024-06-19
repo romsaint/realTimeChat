@@ -21,6 +21,9 @@ const schema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         required: true
     },
+    avatar: {
+        type: String
+    },
     members: {
         type: [mongoose.Types.ObjectId]
     }

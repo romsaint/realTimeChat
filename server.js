@@ -3,6 +3,7 @@ const app = express()
 const path = require('path')
 const compression = require('compression')
 const jwt = require('jsonwebtoken')
+const cors = require('cors')
 
 const routers = require('./controllers/userControllers.js')
 
@@ -17,6 +18,7 @@ app.use(express.static(path.join(__dirname, 'views')))
 app.use(express.urlencoded({extended: true}))
 app.use(express.json())
 app.use(compression())
+app.use(cors())
 
 io.use((socket, next) => {
     const token = socket.handshake.auth.token
