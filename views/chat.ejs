@@ -219,7 +219,7 @@
                                 <a href="/chat/${i._id}" class=" user-btn">
                                     <div class="get-user active-user get-user-${url}">
                                         <div class="wrap__user-avatar">
-                                            <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
+                                            <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
                                         </div>
                                         <div class="username">
                                             ${i.chatName}

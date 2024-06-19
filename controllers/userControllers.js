@@ -181,7 +181,6 @@ router.get('/acquaintances', verifyToken, async (req, res) => {
 router.get('/chat/:userId', async (req, res) => {
     res.render('chat');
 })
-
 router.get('/user-data/:userId', verifyToken, async (req, res) => {
     const userId = req.params.userId;
     const cacheKey = `messeges_${userId}`;
@@ -207,7 +206,7 @@ router.get('/user-data/:userId', verifyToken, async (req, res) => {
 
             const chatData = await Promise.all(chatDataDirty.map(async (message) => {
 
-                const sender = await Users.findOne({ _id: message.sender }, { username: 1, avatar: 1 });
+                const sender = await Users.findOne({ _id: message.sender }, { username: 1});
 
                 return {
                     ...message,
@@ -262,7 +261,6 @@ router.get('/user-data/:userId', verifyToken, async (req, res) => {
         console.log(e.message);
     };
 })
-
 
 router.post('/send-message/:userId', verifyToken, async (req, res) => {
     const { message } = req.body;
@@ -427,8 +425,12 @@ router.post('/create-chat', multer.single('chatAvatar'), verifyToken, async (req
                 .resize(150, 150)
                 .jpeg()
                 .toFile('views/userAvatars/compressed_' + uniqueId + '_' + chatAvatar.originalname); // Сохраняем сжатый файл
+                try{
+                    fs.unlinkSync(chatAvatar.path)
+                }catch(e){
+
+                }
                 
-                fs.unlinkSync(chatAvatar.path)
 
                 req.file.path = '/userAvatars/compressed_' + uniqueId + '_' + chatAvatar.originalname
                 req.file.filename = 'compressed_' + uniqueId + '_' + chatAvatar.originalname
