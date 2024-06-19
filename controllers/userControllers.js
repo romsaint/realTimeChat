@@ -69,7 +69,12 @@ router.post('/registration', multer.single('avatar'), async (req, res) => {
                 .jpeg()
                 .toFile('views/userAvatars/compressed_' + uniqueId + '_' + avatar.originalname); // Сохраняем сжатый файл
 
-            fs.unlinkSync(avatar.path)
+            try{
+                fs.unlinkSync(avatar.path)  
+            }catch(e){
+                
+            }
+            
 
             req.file.path = '/userAvatars/compressed_' + uniqueId + '_' + avatar.originalname
             req.file.filename = 'compressed_' + uniqueId + '_' + avatar.originalname
@@ -140,18 +145,8 @@ router.get('/', async (req, res) => {
 })
 
 router.get('/acquaintances', verifyToken, async (req, res) => {
-    const messagesDirty = await Messages.find({}, { recipient: 1, sender: 1 }).lean().exec();
-
-    let messagesDirtySet = new Set(messagesDirty)
-
-    let messagesArr = []
-
-    let mes = Array.from(messagesDirtySet)
-
-    for (i of mes) {
-        messagesArr.unshift(i)
-    }
-    const messagesSet = new Set();
+    const messagesArr = await Messages.find({}, { recipient: 1, sender: 1 }).lean().exec();
+    const messagesSet = new Set()
 
     for (let message of messagesArr) {
         const senderId = new mongoose.Types.ObjectId(message.sender);
@@ -171,9 +166,15 @@ router.get('/acquaintances', verifyToken, async (req, res) => {
             { _id: { $ne: req.user } },
             { _id: { $in: messages } }
         ]
-    }).lean().exec();
+    }).sort({date_created: 1}).lean().exec();
 
-    return res.json({ users });
+    const chats = await Chats.find({
+        members: {
+            $in: [req.user]
+        }
+    })
+
+    return res.json({ users, chats });
 });
 
 
@@ -185,7 +186,7 @@ router.get('/user-data/:userId', verifyToken, async (req, res) => {
     const userId = req.params.userId;
     const cacheKey = `messeges_${userId}`;
     try {
-        const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 });
+        const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1, avatar: 1 });
 
         if (!recipient) {
             if (cache.get(cacheKey)) {
@@ -206,7 +207,7 @@ router.get('/user-data/:userId', verifyToken, async (req, res) => {
 
             const chatData = await Promise.all(chatDataDirty.map(async (message) => {
 
-                const sender = await Users.findOne({ _id: message.sender }, { username: 1 });
+                const sender = await Users.findOne({ _id: message.sender }, { username: 1, avatar: 1 });
 
                 return {
                     ...message,
@@ -271,7 +272,7 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
 
     try {
         if (message.trim()) {
-            const recipientUser = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 })
+            const recipientUser = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1, avatar: 1 })
 
             if (!recipientUser) {
                 const chatRecipient = await Chats.findOne({ _id: userId })
@@ -307,7 +308,7 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
             });
 
             const cacheData = cache.get(cacheKey).messages.concat([createdMessage])
-            const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1 });
+            const recipient = await Users.findOne({ _id: userId }, { username: 1, uniqueUsername: 1, avatar: 1 });
 
             cache.set(cacheKey, { messages: cacheData, recipient, userNow: createdMessage.sender })
 
@@ -412,7 +413,7 @@ router.post('/create-chat', multer.single('chatAvatar'), verifyToken, async (req
     const { chatName, uniqueChatName, maxUsers } = req.body;
     const chatAvatar = req.file
     let chat;
-    console.log(chatAvatar)
+
     try {
         if(chatAvatar){
             const ext = path.extname(chatAvatar.originalname)
@@ -422,12 +423,11 @@ router.post('/create-chat', multer.single('chatAvatar'), verifyToken, async (req
             }
 
             const uniqueId = uuid.v4()
-
-            await sharp()
+            await sharp(chatAvatar.path)
                 .resize(150, 150)
                 .jpeg()
                 .toFile('views/userAvatars/compressed_' + uniqueId + '_' + chatAvatar.originalname); // Сохраняем сжатый файл
-            
+                
                 fs.unlinkSync(chatAvatar.path)
 
                 req.file.path = '/userAvatars/compressed_' + uniqueId + '_' + chatAvatar.originalname
@@ -449,6 +449,7 @@ router.post('/create-chat', multer.single('chatAvatar'), verifyToken, async (req
             });
         }
     
+        
 
         chat.members.push(req.user)
         await chat.save()
@@ -485,15 +486,7 @@ router.post('/confirm-unique-chatname', async (req, res) => {
     };
 });
 
-router.get('/chats', verifyToken, async (req, res) => {
-    const chats = await Chats.find({
-        members: {
-            $in: [req.user]
-        }
-    })
 
-    return res.json({ chats })
-})
 
 
 router.get('/is-user-join-chat/:chatId', verifyToken, async (req, res) => {

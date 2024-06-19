@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="./static/home.css">
+    <link rel="stylesheet" id="theme-link" href="./static/homeLight.css">
 </head>
 
 
@@ -25,9 +25,9 @@
 
 </script>
 
-<body class="bg-blue-50 flex flex-col items-center justify-center min-h-screen">
-    <div class="main bg-white p-8 rounded w-full flex">
-        <div class="mini-shadow w-1/4 bg-gray-100 p-4 rounded mr-4">
+<body class="flex flex-col items-center justify-center min-h-screen">
+    <div class="main p-8 rounded w-full flex">
+        <div class="left-side mini-shadow w-1/4 p-4 rounded mr-4">
             <div class="menu-search mt-4 flex">
                 <a href="#" class="a__svg-menu">
                     <svg viewBox="0 0 24 24" class="svg-menu" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 6H20M4 12H20M4 18H20" stroke="#3fa695" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
@@ -47,14 +47,14 @@
         <!-- Основной контент чата -->
         <div class="w-3/4 inner-main">
             <div class="chat-container">
-                <div class="inner-chat-container mini-shadow h-64 overflow-y-auto p-4 border rounded">
+                <div class="inner-chat-container mini-shadow h-64 overflow-y-auto p-4 rounded">
           
                     <div class="mb-4 chat">
                         
                     </div>
                    
                 </div>
-                <div class="inner-chat-container-2 mini-shadow border rounded">
+                <div class="inner-chat-container-2 mini-shadow rounded">
           
                     <div class="mb-4 chat">
                         
@@ -77,6 +77,11 @@
                 <div class="links">
                     <a href="/create-chat" class="menu-link create-chat-link">Create chat</a>
                 </div>
+                <form method="get" action="/darkmode" class="toggle-container">
+                    <p class="dark-mode-text">Dark mode</p>
+                    <input type="checkbox" name="darkmode" id="dark-mode-toggle">
+                    <label for="dark-mode-toggle"></label>
+                </form>
             </div>
         </div>
     </div>
@@ -88,8 +93,36 @@
         window.location.href = '/registration'
     }
 
-    const url = window.location.href.split('/chat/')[1]
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const themeLink = document.getElementById('theme-link');
     
+    function darkOff(){
+        localStorage.setItem('darkmode', -1)
+        themeLink.href = "./static/homeLight.css";
+
+    }
+    function darkOn(){
+        localStorage.setItem('darkmode', 52)
+        themeLink.href = "./static/homeDark.css";
+
+    }
+
+    if(localStorage.darkmode === '52'){
+        darkModeToggle.checked = true
+        darkOn()
+    }
+    if(localStorage.darkmode === '-1'){
+        darkOff()
+    }
+    
+    darkModeToggle.addEventListener('change', function() {
+        if (darkModeToggle.checked) {
+            darkOn()
+        } else {
+            darkOff()
+        }
+    });
+
     $('.search-form').keydown(e => {
         setTimeout(() => {
             const form = $(e.currentTarget)
@@ -103,23 +136,41 @@
                 },
                 success: res => {
                     $('.users > *').remove()
+                    console.log(res)
                     if(res.users.length > 0){
                         for(i of res.users){
-                            if(i._id === url){
-                                $('.users').append(`
-                                <div class="get-user">
-                                    <a href="/chat/${i._id}" class="user-btn active-user">${i.username}</a>
-                                </div>
-                            `)
-                            }else{
-                                $('.users').append(`
+                            $('.users').append(`
+                                <a href="/chat/${i._id}" class="user-btn">
                                     <div class="get-user">
-                                        <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
-                                    </div>
-                                `)
-                            }
+                                        <div class="wrap__user-avatar">
+                                            <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                        </div>
+                                        <div class="username">
+                                            ${i.username}
+                                        </div>
+                                    </div> 
+                                </a>
+                            `)
                         }
-                    }else{
+                    }
+                    if (res.chats.length > 0){
+                        for(i of res.chats){
+                            $('.users').append(`
+                                <a href="/chat/${i._id}">
+                                    <div class="get-user ">
+                                        <div class="wrap__user-avatar">
+                                            <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                        </div>
+                                        <div class="username">
+                                            ${i.chatName}
+                                        </div>
+                                    </div> 
+                                </a>
+                            `)
+                            
+                        }
+                    }
+                    if(res.users.length < 1 && res.chats.length < 1){
                         $('.users').append(`
                             <div class="not-found-search bg-amber-200">
                                 <center>
@@ -128,7 +179,7 @@
                             </div>
                         `)
                     }
-                    console.log(res)
+                //    END 
                 }
             })
         }, 0)
@@ -144,9 +195,33 @@
             if(res.users){
                 for(i of res.users){
                     $('.users').append(`
-                        <div class="get-user">
-                            <a href="/chat/${i._id}" class="user-btn user">${i.username}</a>
-                        </div>
+                        <a href="/chat/${i._id}">
+                            <div class="get-user">
+                                <div class="wrap__user-avatar">
+                                    <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                </div>
+                                <div class="username">
+                                    ${i.username}
+                                </div>
+                            </div> 
+                        </a>
+                    `)
+                }
+            }
+
+            if(res.chats.length > 0){
+                for(i of res.chats){
+                    $('.users').append(`
+                        <a href="/chat/${i._id}">
+                            <div class="get-user">
+                                <div class="wrap__user-avatar">
+                                    <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                </div>
+                                <div class="username">
+                                    ${i.chatName}
+                                </div>
+                            </div> 
+                        </a>
                     `)
                 }
             }
@@ -162,37 +237,48 @@
 
                 $('.create-chat-link').click(e => {
                     e.preventDefault()
-
+  
                     $('.inner-main > *').remove()
                     $('.inner-main').append(`
-                        <div class="bg-green-50 p-8 rounded shadow w-full h-full flex flex-col">
+                        <div class="create-chat-container p-8 rounded shadow w-full h-full flex flex-col">
                             <span class="absolute svg-close-create-chat">
                                 <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
                             </span>
-
-                            <h1 class="text-center text-2xl font-bold mb-6">Create chat</h1>
+                            <h1 class="text-center text-2xl font-bold">Create chat</h1>
                             <div class="wrap__alert-chat-create">
                 
                             </div>
-                            <form action="/create-chat" method="post" class="form-create-chat flex flex-col h-full">
-                                <div class="mb-4">
-                                    <label for="chatName" class="block text-gray-700 text-sm font-bold mb-2">Chat name</label>
-                                    <input type="chatName" name="chatName" id="chatName" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            <form action="/create-chat" method="post" enctype="multipart/form-data" class="form-create-chat flex flex-col h-full">
+                                <div class="mb-3">
+                                    <label for="chatName" class="lable-create-chat block text-sm font-bold mb-2">Chat name</label>
+                                    <input type="chatName" name="chatName" id="chatName" class="input-create-chat appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline" required>
                                 </div>
-                                <div class="mb-4 uniqueChatName-container">
-                                    <label for="uniqueChatName" class="block text-gray-700 text-sm font-bold mb-2">Unique chat name</label>
-                                    <input type="text" name="uniqueChatName" id="uniqueChatName" class="uniqueChatName appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                <div class="mb-3 uniqueChatName-container">
+                                    <label for="uniqueChatName" class="lable-create-chat block text-sm font-bold mb-2">Unique chat name</label>
+                                    <input type="text" name="uniqueChatName" id="uniqueChatName" class="input-create-chat uniqueChatName appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline" required>
                                 </div>
-                                <div class="mb-4 max-users-container">
-                                    <label for="max-users" class="block text-gray-700 text-sm font-bold mb-2">Max users in chat</label>
-                                    <input type="number" name="maxUsers" id="max-users" class="max-users appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <div class="mb-3 max-users-container">
+                                    <label for="max-users" class="lable-create-chat block text-sm font-bold mb-2">Max users in chat</label>
+                                    <input type="number" name="maxUsers" id="max-users" class="input-create-chat max-users appearance-none border rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div class="mb-3 avatar-container">
+                                    <label for="avatar" class="label-avatar block text-sm font-bold mb-2">Avatar</label>
+                                    <label class="input-file w-full">
+                                            <input type="file" name="chatAvatar">		
+                                            <span class="w-full">Choose file</span>
+                                    </label>
                                 </div>
                                 <div class="flex items-center justify-between mt-auto">
-                                    <button type="submit" class="button-submit-create-chat bg-blue-500 w-full hover:bg-blue-400 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline">Create</button>
+                                    <button type="submit" class="button-submit-create-chat w-full text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline">Create</button>
                                 </div>
                             </form>
                         </div>
                     `)
+
+                    $('.input-file input[type=file]').on('change', function(){
+                        let file = this.files[0];
+                        $(this).next().html(file.name);
+                    });
 
                     $('.svg-close-create-chat').click(e => {
                         window.location.href = `/` 
@@ -230,20 +316,30 @@
                         }, 0)
                     })
 
-                    $('.form-create-chat').submit(e => {
-                        e.preventDefault()
-                        const form = $(e.currentTarget)
-
+                    $('.form-create-chat').submit(function(e) {
+                        e.preventDefault();
+                    
+                        var form = this; // Теперь 'this' ссылается на DOM элемент формы
+                        var formData = new FormData(); // Создаем пустой объект FormData
+                    
+                        // Добавляем данные из формы в FormData
+                        for (var pair of new FormData(form).entries()) {
+                            formData.append(pair[0], pair[1]);
+                        }
+                    
                         $.ajax({
-                            url: '/create-chat',
-                            method: "post",
-                            data: form.serialize(),
+                            url: form.action, // URL, указанный в атрибуте action формы
+                            type: form.method, // Метод запроса, указанный в атрибуте method формы
+                            data: formData,
+                            contentType: false, // Не устанавливать заголовок Content-Type
+                            processData: false, // Не обрабатывать данные формы
                             headers: {
                                 'Authorization': `Bearer ${localStorage.token}`
                             },
                             success: res => {
+                                console.log(res)
                                 if(res.ok){
-                                    socket.emit('join room', res.uniqueChatName)
+                                    socket.emit('join room', uniqueChatName)
                                     window.location.href = '/'
                                 }else{
                                     $('.wrap__alert-chat-create').append(`
@@ -255,10 +351,15 @@
                                             </span>
                                         </div>
                                     `)
+                                    $('.svg-close').click(e => {
+                                        e.preventDefault()
+                                        $('.wrap__alert-chat-create > *').remove()
+                                    })
                                 }
                             }
                         })
                     })
+                    
                    })
             });
             drawer.mouseleave(() => {
@@ -266,34 +367,5 @@
             })
         }
    })
-   $.ajax({
-    url: "/chats",
-    method: "get",
-    headers: {
-        'Authorization': `Bearer ${localStorage.token}`
-    },
-    success: res => {
-        if(res.chats.length > 0){
-            for(i of res.chats){
-                if(i._id === url){
-                    $('.chats').append(`
-                        <div class="get-chat">
-                            <a href="/chat/${i._id}" class="active-chat-btn">${i.chatName}</a>
-                        </div>
-                    `)
-                }else{
-                    $('.chats').append(`
-                        <div class="get-chat">
-                            <a href="/chat/${i._id}" class="chat-btn">${i.chatName}</a>
-                        </div>
-                    `)
-                }
-                
-            }
-        }
-
-        
-    }
-})
 </script>
 </html>

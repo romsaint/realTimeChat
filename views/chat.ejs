@@ -47,7 +47,7 @@
         </div>
         <!-- Основной контент чата -->
         <div class="w-3/4 inner-main">
-            <div class="user-info mini-shadow flex justify-between items-center mb-2 rounded p-1">
+            <div class="user-info mini-shadow flex justify-between items-center mb-2 rounded p-2">
                 
             </div>
             <div class="chat-container">
@@ -92,58 +92,35 @@
 </div>
 
 <script>
-    function darkOff(){
-        $.ajax({
-            url: "/darkmodeOff",
-            method: 'get',
-            headers: {
-                'Authorization': `Bearer ${localStorage.token}`
-            },
-            success: res => {
-                if(res.ok){
-                    themeLink.href = '../static/chatLightMode.css';
-                }
-            }
-        })
+    if(!localStorage.token){
+        window.location.href = '/registration'
     }
-    function darkOn(){
-        $.ajax({
-            url: "/darkmodeOn",
-            method: 'get',
-            headers: {
-                'Authorization': `Bearer ${localStorage.token}`
-            },
-            success: res => {
-                if(res.ok){
-                    themeLink.href = '../static/chatDarkMode.css';
-                }
-            }
-        })
-    }
+
 
     const darkModeToggle = document.getElementById('dark-mode-toggle');
     const themeLink = document.getElementById('theme-link');
+    
+    function darkOff(){
+        localStorage.setItem('darkmode', -1)
+        themeLink.href = '../static/chatLightMode.css';
 
-    $.ajax({
-        url: '/darkmodeCheck',
-        method: 'get',
-        headers: {
-            'Authorization': `Bearer ${localStorage.token}`
-        },
-        success: res => {
-            if(res.mode === true){
-                darkModeToggle.checked = true
-                darkOn()
-            }else{
-                darkOff()
-            }
-        }
-    })
+    }
+    function darkOn(){
+        localStorage.setItem('darkmode', 52)
+        themeLink.href = '../static/chatDarkMode.css';
 
+    }
+    console.log(localStorage)
+    if(localStorage.darkmode === '52'){
+        darkModeToggle.checked = true
+        darkOn()
+    }
+    if(localStorage.darkmode === '-1'){
+        darkOff()
+    }
     
     darkModeToggle.addEventListener('change', function() {
         if (darkModeToggle.checked) {
-            console.log('CHECK')
             darkOn()
         } else {
             darkOff()
@@ -236,36 +213,36 @@
                         }
                     }if (res.chats.length > 0){
                        
-                        for(i of res.chats){
-                            if(i._id === url){
-                                $('.users').append(`
-                                    <a href="/chat/${i._id}" class=" user-btn">
-                                        <div class="get-user active-user get-user-${url}">
-                                            <div class="wrap__user-avatar">
-                                                <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
-                                            </div>
-                                            <div class="username">
-                                                ${i.chatName}
-                                            </div>
-                                        </div> 
-                                    </a>
-                                `)
-                            }else{
-                                $('.users').append(`
-                                    <a href="/chat/${i._id}" class=" user-btn">
-                                        <div class="get-user get-user-${url}">
-                                            <div class="wrap__user-avatar">
-                                                <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
-                                            </div>
-                                            <div class="username">
-                                                ${i.chatName}
-                                            </div>
-                                        </div> 
-                                    </a>
-                                `)
-                            }
-                            
+                    for(i of res.chats){
+                        if(i._id === url){
+                            $('.users').append(`
+                                <a href="/chat/${i._id}" class=" user-btn">
+                                    <div class="get-user active-user get-user-${url}">
+                                        <div class="wrap__user-avatar">
+                                            <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
+                                        </div>
+                                        <div class="username">
+                                            ${i.chatName}
+                                        </div>
+                                    </div> 
+                                </a>
+                            `)
+                        }else{
+                            $('.users').append(`
+                                <a href="/chat/${i._id}" class=" user-btn">
+                                    <div class="get-user get-user-${url}">
+                                        <div class="wrap__user-avatar">
+                                            <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
+                                        </div>
+                                        <div class="username">
+                                            ${i.chatName}
+                                        </div>
+                                    </div> 
+                                </a>
+                            `)
                         }
+                        
+                    }
                     }if(res.users.length < 1 && res.chats.length < 1){
                         $('.users').append(`
                             <div class="not-found-search bg-amber-200">
@@ -322,9 +299,13 @@
                 $('.user-info').addClass('mb-2')
                 $('.chat-container').addClass('mb-2')
     
-    
                 $('.user-info').append(`
-                    <h1 class="text-2xl h1-user-info">${res.recipient.username}</h1>
+                    <div class="user-info__username">
+                        <h1 class="text-2xl h1-user-info">${res.recipient.username}</h1>
+                        <div class="wrap__user-avatar">
+                            <img src="${res.recipient.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : res.recipient.avatar}" alt="User avatar" class="user-avatar ${res.recipient.avatar === undefined ? 'no-avatar' : ''} user-info-avatar">
+                        </div>
+                    </div>
                     <div class="flex items-center user-info-leave-uniquename">
                         <p class="recipient-unique-username">@${res.recipient.uniqueUsername}</p>
                     </div>
@@ -403,7 +384,12 @@
                 $('.chat-container').addClass('mb-2')
     
                 $('.user-info').append(`
-                    <h1 class="text-2xl h1-user-info">${res.chatRecipient.chatName}</h1>
+                    <div class="user-info__username">
+                        <h1 class="text-2xl h1-user-info">${res.chatRecipient.chatName}</h1>
+                        <div class="wrap__user-avatar">
+                            <img src="${res.chatRecipient.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : res.chatRecipient.avatar}" alt="User avatar" class="user-avatar ${res.chatRecipient.avatar === undefined ? 'no-avatar' : ''} user-info-avatar">
+                        </div>
+                    </div>
                     <div class="flex items-center user-info-leave-uniquename">
                         <p class="recipient-unique-username">@${res.chatRecipient.uniqueChatName}</p>
                         
@@ -582,7 +568,7 @@
             'Authorization': `Bearer ${localStorage.token}`
         },
         success: res => {
-            if(res.users){
+            if(res.users.length > 0){
                 for(i of res.users){
                     if(i._id === url){
                         $('.users').append(`
@@ -614,6 +600,38 @@
                     }
                 }
             }
+            if(res.chats.length > 0){
+                for(i of res.chats){
+                    if(i._id === url){
+                        $('.users').append(`
+                            <a href="/chat/${i._id}" class=" user-btn">
+                                <div class="get-user active-user get-user-${url}">
+                                    <div class="wrap__user-avatar">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                    </div>
+                                    <div class="username">
+                                        ${i.chatName}
+                                    </div>
+                                </div> 
+                            </a>
+                        `)
+                    }else{
+                        $('.users').append(`
+                            <a href="/chat/${i._id}" class=" user-btn">
+                                <div class="get-user get-user-${url}">
+                                    <div class="wrap__user-avatar">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                    </div>
+                                    <div class="username">
+                                        ${i.chatName}
+                                    </div>
+                                </div> 
+                            </a>
+                        `)
+                    }
+                    
+                }
+            }
             
             const drawer = $('#drawer');
             const svgMenu = $('.a__svg-menu');
@@ -633,7 +651,7 @@
                             <span class="absolute svg-close-create-chat">
                                 <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
                             </span>
-                            <h1 class="text-center text-2xl font-bold">Create chat</h1>
+                            <h1 class="create-chat-h1 text-center text-2xl font-bold">Create chat</h1>
                             <div class="wrap__alert-chat-create">
                 
                             </div>
@@ -705,12 +723,17 @@
                         }, 0)
                     })
 
-                    $('.form-create-chat').submit(e => {
-                        e.preventDefault()
-                      
-                        var form = this;
-                        var formData = new FormData(form); // Создаем объект FormData
-                
+                    $('.form-create-chat').submit(function(e) {
+                        e.preventDefault();
+                    
+                        var form = this; // Теперь 'this' ссылается на DOM элемент формы
+                        var formData = new FormData(); // Создаем пустой объект FormData
+                    
+                        // Добавляем данные из формы в FormData
+                        for (var pair of new FormData(form).entries()) {
+                            formData.append(pair[0], pair[1]);
+                        }
+                    
                         $.ajax({
                             url: form.action, // URL, указанный в атрибуте action формы
                             type: form.method, // Метод запроса, указанный в атрибуте method формы
@@ -721,6 +744,7 @@
                                 'Authorization': `Bearer ${localStorage.token}`
                             },
                             success: res => {
+                                console.log(res)
                                 if(res.ok){
                                     socket.emit('join room', uniqueChatName)
                                     window.location.href = '/'
@@ -748,51 +772,6 @@
             drawer.mouseleave(() => {
                 drawer.css({'left': '-20%'})
             })
-        }
-   })
-
-   //    CHATS      ??       CHATS
-   $.ajax({
-        url: "/chats",
-        method: "get",
-        headers: {
-            'Authorization': `Bearer ${localStorage.token}`
-        },
-        success: res => {
-            if(res.chats.length > 0){
-                for(i of res.chats){
-                    if(i._id === url){
-                        $('.users').append(`
-                            <a href="/chat/${i._id}" class=" user-btn">
-                                <div class="get-user active-user get-user-${url}">
-                                    <div class="wrap__user-avatar">
-                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
-                                    </div>
-                                    <div class="username">
-                                        ${i.chatName}
-                                    </div>
-                                </div> 
-                            </a>
-                        `)
-                    }else{
-                        $('.users').append(`
-                            <a href="/chat/${i._id}" class=" user-btn">
-                                <div class="get-user get-user-${url}">
-                                    <div class="wrap__user-avatar">
-                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
-                                    </div>
-                                    <div class="username">
-                                        ${i.chatName}
-                                    </div>
-                                </div> 
-                            </a>
-                        `)
-                    }
-                    
-                }
-            }
-
-            
         }
    })
 </script>
