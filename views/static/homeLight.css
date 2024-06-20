@@ -1,3 +1,6 @@
+@import url('./homeDark.css');
+
+
 * {
     font-family: "Lato", sans-serif;
     font-weight: 400;
@@ -13,6 +16,14 @@ body{
     box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.04);
 }
 
+input[name="query"] {
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(205, 205, 205);
+    color: rgb(42, 42, 42);
+}
+.username{
+    color: rgb(42, 42, 42);
+}
 .button-send-message{
     transition: 0.11s ease-in-out;
 }

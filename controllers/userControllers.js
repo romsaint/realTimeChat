@@ -206,7 +206,7 @@ router.get('/user-data/:userId', verifyToken, async (req, res) => {
             const chatData = await Promise.all(chatDataDirty.map(async (message) => {
 
                 const sender = await Users.findOne({ _id: message.sender }, { username: 1});
-
+             
                 return {
                     ...message,
                     sender
@@ -289,8 +289,13 @@ router.post('/send-message/:userId', verifyToken, async (req, res) => {
                 createdMessage.sender = username[0]
 
                 const chatCacheData = cache.get(cacheKey).chatData.concat([createdMessage])
-
-                cache.set(cacheKey, { chatData: chatCacheData, chatRecipient })
+          
+                if(!chatCacheData){
+                    cache.set(cacheKey, { chatData: [createdMessage], chatRecipient })
+                }else{
+                    cache.set(cacheKey, { chatData: chatCacheData, chatRecipient })
+                }
+                
 
                 const sender = await Users.findOne({ _id: createdMessage.sender._id }).lean()
 
