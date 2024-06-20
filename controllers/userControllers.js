@@ -14,7 +14,6 @@ const fs = require('fs')
 const Users = require('../schemas/userSchema')
 const Messages = require('../schemas/messageSchema')
 const Chats = require('../schemas/chatsSchema')
-const SiteSettings = require('../schemas/siteSettings')
 
 const verifyToken = require('../utils/verify')
 
@@ -513,11 +512,17 @@ router.get('/is-user-join-chat/:chatId', verifyToken, async (req, res) => {
 router.get('/join-chat/:chatId', verifyToken, async (req, res) => {
     const chat = await Chats.findOne({ _id: req.params.chatId })
 
+    const cacheKey = `messeges_${req.params.chatId}`;
+    const {chatData} = cache.get(cacheKey)
+
     if (!chat) return res.json({ message: 'Chat not found.' })
 
     if (chat.members.length < chat.maxUsers || !chat.maxUsers) {
+
         chat.members.push(req.user);
         await chat.save();
+
+        cache.set(cacheKey, {chatRecipient: chat, chatData})
 
         return res.json({ ok: 1, uniqueChatName: chat.uniqueChatName })
     } else {
@@ -528,6 +533,9 @@ router.get('/join-chat/:chatId', verifyToken, async (req, res) => {
 //     LEAVE     LEAVE
 router.get('/leave/:chatId', verifyToken, async (req, res) => {
     const chat = await Chats.findOne({ _id: req.params.chatId })
+    const cacheKey = `messeges_${req.params.chatId}`;
+
+    const {chatData} = cache.get(cacheKey)
 
     if (!chat) return res.json({ message: 'Chat not found.' })
 
@@ -538,64 +546,11 @@ router.get('/leave/:chatId', verifyToken, async (req, res) => {
     chat.members.splice(index, 1)
     await chat.save()
 
+    cache.set(cacheKey, {chatRecipient: chat, chatData})
+
     return res.json({ ok: true })
 })
 
 //        ROUTER END
-// SITE SETTINGS
-router.get('/darkmodeCheck', verifyToken, async (req, res) => {
-    const dark = await SiteSettings.findOne({
-        user: req.user
-    })
-    if (dark) {
-        return res.json({ mode: dark.darkMode })
-    }
-    return res.json({ ok: false })
-})
-router.get('/darkmodeOn', verifyToken, async (req, res) => {
-    try {
-        const ixExists = await SiteSettings.findOne({
-            user: req.user
-        })
 
-        if (ixExists) {
-            await SiteSettings.updateOne({
-                darkMode: true
-            })
-        } else {
-            await SiteSettings.create({
-                darkMode: true,
-                user: req.user
-            })
-        }
-
-        return res.json({ ok: true })
-    } catch (e) {
-        console.log(e)
-        return res.json({ ok: false })
-    }
-})
-router.get('/darkmodeOff', verifyToken, async (req, res) => {
-    try {
-        const ixExists = await SiteSettings.findOne({
-            user: req.user
-        })
-
-        if (ixExists) {
-            await SiteSettings.updateOne({
-                darkMode: false
-            })
-        } else {
-            await SiteSettings.create({
-                darkMode: false,
-                user: req.user
-            })
-        }
-
-        return res.json({ ok: true })
-    } catch (e) {
-        console.log(e)
-        return res.json({ ok: false })
-    }
-})
 module.exports = router;

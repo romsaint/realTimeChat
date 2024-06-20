@@ -43,6 +43,25 @@
             <ul class="chats mt-3">
 
             </ul>
+            <div id="drawer" class="drawer">
+                <div class="menu">
+                    <div class="inner-menu">
+                        <div class="text-menu">
+                            <center>
+                                <h4 class="menu-name">Menu</h4>
+                            </center>
+                        </div>
+                        <div class="links">
+                            <a href="/create-chat" class="menu-link create-chat-link">Create chat</a>
+                        </div>
+                        <form method="get" action="/darkmode" class="toggle-container">
+                            <p class="dark-mode-text">Dark mode</p>
+                            <input type="checkbox" name="darkmode" id="dark-mode-toggle">
+                            <label for="dark-mode-toggle"></label>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- Основной контент чата -->
         <div class="w-3/4 inner-main">
@@ -63,26 +82,6 @@
                 </div>
             </div>
 
-        </div>
-    </div>
-
-    <div id="drawer" class="drawer">
-        <div class="menu">
-            <div class="inner-menu">
-                <div class="text-menu">
-                    <center>
-                        <h4 class="menu-name">Menu</h4>
-                    </center>
-                </div>
-                <div class="links">
-                    <a href="/create-chat" class="menu-link create-chat-link">Create chat</a>
-                </div>
-                <form method="get" action="/darkmode" class="toggle-container">
-                    <p class="dark-mode-text">Dark mode</p>
-                    <input type="checkbox" name="darkmode" id="dark-mode-toggle">
-                    <label for="dark-mode-toggle"></label>
-                </form>
-            </div>
         </div>
     </div>
 </body>
@@ -233,7 +232,6 @@
                 e.preventDefault();
                 
                 drawer.toggleClass('open');
-                drawer.css({'left': '2%', 'height': `462px`, 'top': '19.3%', 'width': '14%'})
 
                 $('.create-chat-link').click(e => {
                     e.preventDefault()
@@ -363,7 +361,7 @@
                    })
             });
             drawer.mouseleave(() => {
-                drawer.css({'left': '-20%'})
+                drawer.removeClass('open')
             })
         }
    })
