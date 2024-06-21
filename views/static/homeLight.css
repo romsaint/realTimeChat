@@ -351,3 +351,45 @@ input[name="query"] {
 .toggle-container input[type="checkbox"]:checked + label::after {
     transform: translateX(30px);
 }
+
+
+.header{
+    width: 100%;
+    height: 10%;
+}
+.inner-header{
+    background-color: white;
+    align-items: center;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.148);
+}
+.header-logo{
+    width: 20%;
+}
+.nav{
+    width: 60%;
+    padding: 5px;
+    border-bottom: 1px solid #b7b7b7;
+}
+.svg-right-menu-header{
+    width: 50px;
+}
+.right-menu-header{
+    width: 20%;
+}
+.inner-right-menu-header{
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+.list-items{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    color: #2d2d31;
+}
+.link-item{
+    font-size: 13px;
+}
+.header-logo-svg{
+    width: 50px;
+}

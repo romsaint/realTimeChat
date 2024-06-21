@@ -4,12 +4,18 @@
     font-family: "Lato", sans-serif;
     font-weight: 400;
     font-style: normal;
+    box-sizing: border-box;
+}
+
+:root{
+    --main-color:  rgb(195 216 218);
 }  
+
 li{
     list-style: none;
 }
 body{
-    background-color: aliceblue;
+    background-color: var(--main-color);
 }
 .mini-shadow{
     box-shadow: 2px 2px 1px rgba(65, 48, 48, 0.04);
@@ -18,6 +24,7 @@ body{
 input[name="query"], input[name="message"]{
     background-color: white;
     color: #242424;
+    outline: none;
     border: 1px solid #e5e7eb;;
 }
 
@@ -46,6 +53,7 @@ input[name="query"], input[name="message"]{
 .main{
     height: 70vh;
     background-color: white;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.148);
 }
 .inner-main{
     display: flex;
@@ -136,6 +144,7 @@ input[name="query"], input[name="message"]{
     overflow: auto;
     max-height: 85%;
     padding-right: 7px;
+    min-height: 84%;
 }
 .users::-webkit-scrollbar {
     background-color: #ffffff;
@@ -189,7 +198,7 @@ input[name="query"], input[name="message"]{
 }
 
 .button-send-message{
-    background-color: rgb(136, 190, 196);
+    background-color: rgb(163, 209, 213);
 }
 .button-send-message:hover{
     background-color: rgb(136, 196, 188);
@@ -241,6 +250,7 @@ input[name="query"], input[name="message"]{
     margin-bottom: 10px;
     background: aliceblue;
     border: 1px solid #dde5f7;
+    color: #242424;
 }
 
 .links{
@@ -381,4 +391,47 @@ input[name="query"], input[name="message"]{
 /* Disabled */
 .input-file input[type=file]:disabled + span {
 	background-color: #eee;
+}
+
+
+
+.header{
+    width: 100%;
+    height: 10%;
+}
+.inner-header{
+    background-color: white;
+    align-items: center;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.148);
+}
+.header-logo{
+    width: 20%;
+}
+.nav{
+    width: 60%;
+    padding: 5px;
+    border-bottom: 1px solid #b7b7b7;
+}
+.svg-right-menu-header{
+    width: 50px;
+}
+.right-menu-header{
+    width: 20%;
+}
+.inner-right-menu-header{
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+.list-items{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    color: #2d2d31;
+}
+.link-item{
+    font-size: 13px;
+}
+.header-logo-svg{
+    width: 50px;
 }

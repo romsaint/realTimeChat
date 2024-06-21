@@ -2,6 +2,7 @@
     font-family: "Lato", sans-serif;
     font-weight: 400;
     font-style: normal;
+    box-sizing: border-box;
 }  
 li{
     list-style: none;
@@ -17,6 +18,7 @@ input[name="query"]{
     background-color: rgb(54, 55, 55);
     border: #585858;
     color: #dddddd;
+    outline: none;
 }
 
 input[name="message"]{
@@ -407,4 +409,50 @@ label{
 /* Disabled */
 .input-file input[type=file]:disabled + span {
 	background-color: #eee;
+}
+
+
+
+.header{
+    width: 100%;
+    height: 10%;
+}
+.inner-header{
+    background-color: rgb(27 27 27);
+    align-items: center;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.148);
+}
+.header-logo{
+    width: 20%;
+}
+.nav{
+    width: 60%;
+    padding: 5px;
+    border-bottom: 1px solid #414141;
+}
+.svg-right-menu-header{
+    width: 50px;
+}
+.right-menu-header{
+    width: 20%;
+}
+.inner-right-menu-header{
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+.list-items{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    color: #dddddd;
+}
+.header-link-logo-svg{
+    display: contents;
+}
+.link-item{
+    font-size: 13px;
+}
+.header-logo-svg{
+    width: 50px;
 }

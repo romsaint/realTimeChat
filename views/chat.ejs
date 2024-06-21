@@ -22,18 +22,48 @@
         }
     });
 </script>
+
 <body class="flex flex-col items-center justify-center min-h-screen">
     <div class="wrap__alert">
 
     </div>
+    <header class="header">
+        <div class="inner-header rounded mb-2 px-8 py-2 flex">
+            <div class="header-logo mr-8">
+                <a href="/" class="header-link-logo-svg">
+                    <svg viewBox="0 0 24 24" class="header-logo-svg"  fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 7.063C16.5 10.258 14.57 13 12 13c-2.572 0-4.5-2.742-4.5-5.938C7.5 3.868 9.16 2 12 2s4.5 1.867 4.5 5.063zM4.102 20.142C4.487 20.6 6.145 22 12 22c5.855 0 7.512-1.4 7.898-1.857a.416.416 0 0 0 .09-.317C19.9 18.944 19.106 15 12 15s-7.9 3.944-7.989 4.826a.416.416 0 0 0 .091.317z" fill="#383838"></path></g></svg>
+                </a>
+            </div>
+            <nav class="nav">
+                <ul class="list-items">
+                    <li class="list-item">
+                        <a href="#" class="link-item">Lorem</a>
+                    </li>
+                    <li class="list-item">
+                        <a href="#" class="link-item">Lorem</a>
+                    </li>
+                    <li class="list-item">
+                        <a href="#" class="link-item">Lorem</a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="right-menu-header">
+                <div class="inner-right-menu-header">
+                    <a href="#" class="link-right-menu-header">
+
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
     <div class="main p-8 rounded w-full flex">
         <div class="left-side mini-shadow w-1/4 p-4 rounded mr-4">
             <div class="menu-search mt-4 flex">
                 <a href="#" class="a__svg-menu">
-                    <svg viewBox="0 0 24 24" class="svg-menu" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 6H20M4 12H20M4 18H20" stroke="#3fa695" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                    <svg viewBox="0 0 24 24" class="svg-menu" fill="rgb(36, 19, 16)" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 6H20M4 12H20M4 18H20" stroke="#3fa695" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                 </a>
                 <form action="/search-users" method="post" class="search-form">
-                    <input type="text" name="query" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-200" placeholder="Search user with ID">
+                    <input type="text" name="query" class="w-full px-3 py-2 border rounded focus:outline-none" placeholder="Search user with ID">
                 </form>
             </div>
 
@@ -102,12 +132,26 @@
     function darkOff(){
         localStorage.setItem('darkmode', -1)
         themeLink.href = '../static/chatLightMode.css';
-
+        $('.link-right-menu-header > *').remove()
+        $('.link-right-menu-header').append(`
+            <svg viewBox="0 0 24 24" class="svg-right-menu-header" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10C6.10457 10 7 10.8954 7 12Z" fill="#1C274C"></path> <path d="M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z" fill="#1C274C"></path> <path d="M21 12C21 13.1046 20.1046 14 19 14C17.8954 14 17 13.1046 17 12C17 10.8954 17.8954 10 19 10C20.1046 10 21 10.8954 21 12Z" fill="#1C274C"></path> </g></svg>
+        `)
+        $('.header-link-logo-svg > *').remove()
+        $('.header-link-logo-svg').append(`
+            <svg viewBox="0 0 24 24" class="header-logo-svg"  fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 7.063C16.5 10.258 14.57 13 12 13c-2.572 0-4.5-2.742-4.5-5.938C7.5 3.868 9.16 2 12 2s4.5 1.867 4.5 5.063zM4.102 20.142C4.487 20.6 6.145 22 12 22c5.855 0 7.512-1.4 7.898-1.857a.416.416 0 0 0 .09-.317C19.9 18.944 19.106 15 12 15s-7.9 3.944-7.989 4.826a.416.416 0 0 0 .091.317z" fill="#383838"></path></g></svg>
+        `)
     }
     function darkOn(){
         localStorage.setItem('darkmode', 52)
         themeLink.href = '../static/chatDarkMode.css';
-
+        $('.link-right-menu-header > *').remove()
+        $('.link-right-menu-header').append(`
+            <svg viewBox="0 0 24 24" class="svg-right-menu-header" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10C6.10457 10 7 10.8954 7 12Z" fill="#ededed"></path> <path d="M14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12Z" fill="#ededed"></path> <path d="M21 12C21 13.1046 20.1046 14 19 14C17.8954 14 17 13.1046 17 12C17 10.8954 17.8954 10 19 10C20.1046 10 21 10.8954 21 12Z" fill="#ededed"></path> </g></svg>
+        `)
+        $('.header-link-logo-svg > *').remove()
+        $('.header-link-logo-svg').append(`
+            <svg viewBox="0 0 24 24" class="header-logo-svg"  fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 7.063C16.5 10.258 14.57 13 12 13c-2.572 0-4.5-2.742-4.5-5.938C7.5 3.868 9.16 2 12 2s4.5 1.867 4.5 5.063zM4.102 20.142C4.487 20.6 6.145 22 12 22c5.855 0 7.512-1.4 7.898-1.857a.416.416 0 0 0 .09-.317C19.9 18.944 19.106 15 12 15s-7.9 3.944-7.989 4.826a.416.416 0 0 0 .091.317z" fill="#f0f0f0"></path></g></svg>
+        `)
     }
 
     if(localStorage.darkmode === '52'){
@@ -185,7 +229,7 @@
                                     <a href="/chat/${i._id}" class=" user-btn">
                                         <div class="get-user active-user get-user-${url}">
                                             <div class="wrap__user-avatar">
-                                                <img src="/userAvatars/1px.png" data-src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                                <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
                                             </div>
                                             <div class="username">
                                                 ${i.username}
@@ -199,7 +243,7 @@
                                     <a href="/chat/${i._id}" class=" user-btn">
                                         <div class="get-user get-user-${url}">
                                             <div class="wrap__user-avatar">
-                                                <img src="/userAvatars/1px.png" data-src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                                <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
                                             </div>
                                             <div class="username">
                                                 ${i.username}
@@ -217,7 +261,7 @@
                                 <a href="/chat/${i._id}" class=" user-btn">
                                     <div class="get-user active-user get-user-${url}">
                                         <div class="wrap__user-avatar">
-                                            <img src="/userAvatars/1px.png" data-src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                            <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
                                         </div>
                                         <div class="username">
                                             ${i.chatName}
@@ -230,7 +274,7 @@
                                 <a href="/chat/${i._id}" class=" user-btn">
                                     <div class="get-user get-user-${url}">
                                         <div class="wrap__user-avatar">
-                                            <img src="/userAvatars/1px.png" data-src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
+                                            <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar">
                                         </div>
                                         <div class="username">
                                             ${i.chatName}
@@ -251,36 +295,7 @@
                         `)
                     }
                     //    END 
-                    $(window).ready(e => {
-                        const lazyImages = document.querySelectorAll('img[data-src]')
-                        const windowH = document.documentElement.clientHeight
-                
-                        let lazyImgPositions = []
-                
-                        if(lazyImages.length > 0){
-                            
-                            lazyImages.forEach(img => {
-                                
-                                if(img.dataset.src){
-                                    lazyImgPositions.push(img.getBoundingClientRect().top + pageYOffset)
-                                    lazyScrollCheck()
-                                }
-                            })
-                        }
-                        
-                        function lazyScrollCheck(){
-                            let index = lazyImgPositions.findIndex(
-                                item => pageYOffset > item - windowH
-                            )
-                            if(index > -1){
-                                if(lazyImages[index].dataset.src){
-                                    lazyImages[index].src = lazyImages[index].dataset.src
-                                    lazyImages[index].removeAttribute('data-src')
-                                }
-                                delete lazyImgPositions[index]
-                            }
-                        }
-                    })
+                   
                 }
             })
         }, 0)
@@ -293,7 +308,7 @@
             'Authorization': `Bearer ${localStorage.token}`
         },
         success: res => {
-
+            console.log(res)
             if(res.messages){
                 if(res.messages.length > 0){
                     for(let i = 0; i < res.messages.length; i++){
@@ -333,7 +348,7 @@
                     <div class="user-info__username">
                         <h1 class="text-2xl h1-user-info">${res.recipient.username}</h1>
                         <div class="wrap__user-avatar">
-                            <img src="/userAvatars/1px.png" data-src="${res.recipient.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : res.recipient.avatar}" alt="User avatar" class="user-avatar ${res.recipient.avatar === undefined ? 'no-avatar' : ''} user-info-avatar">
+                            <img src="${res.recipient.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : res.recipient.avatar}" alt="User avatar" class="user-avatar ${res.recipient.avatar === undefined ? 'no-avatar' : ''} user-info-avatar">
                         </div>
                     </div>
                     <div class="flex items-center user-info-leave-uniquename">
@@ -429,7 +444,7 @@
                     <div class="user-info__username">
                         <h1 class="text-2xl h1-user-info">${res.chatRecipient.chatName}</h1>
                         <div class="wrap__user-avatar">
-                            <img src="/userAvatars/1px.png" data-src="${res.chatRecipient.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : res.chatRecipient.avatar}" alt="User avatar" class="user-avatar ${res.chatRecipient.avatar === undefined ? 'no-avatar' : ''} user-info-avatar">
+                            <img src="${res.chatRecipient.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : res.chatRecipient.avatar}" alt="User avatar" class="user-avatar ${res.chatRecipient.avatar === undefined ? 'no-avatar' : ''} user-info-avatar">
                         </div>
                     </div>
                     <div class="flex items-center user-info-leave-uniquename">
@@ -605,36 +620,7 @@
             }
             $('.inner-chat-container').scrollTop(chatH)
             //      END             END                  END
-            $(window).ready(e => {
-                const lazyImages = document.querySelectorAll('img[data-src]')
-                const windowH = document.documentElement.clientHeight
-        
-                let lazyImgPositions = []
-          
-                if(lazyImages.length > 0){
-                    
-                    lazyImages.forEach(img => {
-                        
-                        if(img.dataset.src){
-                            lazyImgPositions.push(img.getBoundingClientRect().top + pageYOffset)
-                            lazyScrollCheck()
-                        }
-                    })
-                }
-                
-                function lazyScrollCheck(){
-                    let index = lazyImgPositions.findIndex(
-                        item => pageYOffset > item - windowH
-                    )
-                    if(index > -1){
-                        if(lazyImages[index].dataset.src){
-                            lazyImages[index].src = lazyImages[index].dataset.src
-                            lazyImages[index].removeAttribute('data-src')
-                        }
-                        delete lazyImgPositions[index]
-                    }
-                }
-            })
+            
         }
     })
 
@@ -652,7 +638,7 @@
                             <a href="/chat/${i._id}" class=" user-btn">
                                 <div class="get-user active-user get-user-${url}">
                                     <div class="wrap__user-avatar">
-                                        <img src="/userAvatars/1px.png" data-src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
                                     </div>
                                     <div class="username">
                                         ${i.username}
@@ -666,7 +652,7 @@
                             <a href="/chat/${i._id}" class=" user-btn">
                                 <div class="get-user get-user-${url}">
                                     <div class="wrap__user-avatar">
-                                        <img src="/userAvatars/1px.png" data-src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
                                     </div>
                                     <div class="username">
                                         ${i.username}
@@ -684,7 +670,7 @@
                             <a href="/chat/${i._id}" class=" user-btn">
                                 <div class="get-user active-user get-user-${url}">
                                     <div class="wrap__user-avatar">
-                                        <img src="/userAvatars/1px.png" data-src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
                                     </div>
                                     <div class="username">
                                         ${i.chatName}
@@ -697,7 +683,7 @@
                             <a href="/chat/${i._id}" class=" user-btn">
                                 <div class="get-user get-user-${url}">
                                     <div class="wrap__user-avatar">
-                                        <img src="/userAvatars/1px.png" data-src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
+                                        <img src="${i.avatar === undefined ? '/userAvatars/user-question-alt-svgrepo-com.png' : i.avatar}" alt="User avatar" class="user-avatar ${i.avatar === undefined ? 'no-avatar' : ''}">
                                     </div>
                                     <div class="username">
                                         ${i.chatName}
@@ -850,36 +836,7 @@
                 drawer.removeClass('open')
             })
 
-            $(window).ready(e => {
-                const lazyImages = document.querySelectorAll('img[data-src]')
-                const windowH = document.documentElement.clientHeight
-        
-                let lazyImgPositions = []
-        
-                if(lazyImages.length > 0){
-                    
-                    lazyImages.forEach(img => {
-                        
-                        if(img.dataset.src){
-                            lazyImgPositions.push(img.getBoundingClientRect().top + pageYOffset)
-                            lazyScrollCheck()
-                        }
-                    })
-                }
-                
-                function lazyScrollCheck(){
-                    let index = lazyImgPositions.findIndex(
-                        item => pageYOffset > item - windowH
-                    )
-                    if(index > -1){
-                        if(lazyImages[index].dataset.src){
-                            lazyImages[index].src = lazyImages[index].dataset.src
-                            lazyImages[index].removeAttribute('data-src')
-                        }
-                        delete lazyImgPositions[index]
-                    }
-                }
-            })
+            
         }
    })
 </script>
